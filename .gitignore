@@ -28,5 +28,11 @@ venv/
 .eggs/
 *.egg
 
+# Build
+dist/
+build/
+
 # Project
 .workbuddy-ai/
+uploads/*
+!uploads/.gitkeep

@@ -3,11 +3,13 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { packageApi, examineeApi, orderApi } from '../api';
 import Header from '../components/Header';
 import { useStore } from '../store';
+import { useI18n } from '../i18n';
 
 export default function OrderCreate() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { user } = useStore();
+  const { t, td } = useI18n();
   const packageId = searchParams.get('packageId');
   const institutionId = searchParams.get('institutionId');
   const addonIds = searchParams.get('addons');
@@ -27,8 +29,8 @@ export default function OrderCreate() {
   }, [packageId]);
 
   const handleCreate = async () => {
-    if (!selectedExaminee) return alert('请选择体检人');
-    if (!examDate) return alert('请选择体检日期');
+    if (!selectedExaminee) return alert(t('orders.selectExaminee'));
+    if (!examDate) return alert(t('orders.selectDate'));
     try {
       const res: any = await orderApi.create({
         package_id: Number(packageId),
@@ -40,32 +42,32 @@ export default function OrderCreate() {
       });
       navigate(`/orders/${res.data.id}`);
     } catch (err: any) {
-      alert(err.message || '创建失败');
+      alert(err.message || t('orders.createFailed'));
     }
   };
 
-  if (!pkg) return <div className="text-center py-20 text-gray-400">加载中...</div>;
+  if (!pkg) return <div className="text-center py-20 text-gray-400">{t('common.loading')}</div>;
 
   return (
     <div className="pb-24">
-      <Header title="确认预约" />
+      <Header title={t('orders.confirmTitle')} />
 
       <div className="px-4 py-4 space-y-4">
         {/* 套餐信息 */}
         <div className="card flex">
           <div className="w-16 h-16 bg-primary-50 rounded-lg flex items-center justify-center text-2xl">📋</div>
           <div className="ml-3 flex-1">
-            <div className="text-sm font-medium">{pkg.name}</div>
+            <div className="text-sm font-medium">{td(pkg.name)}</div>
             <div className="text-red-500 mt-1">¥{pkg.price}</div>
           </div>
         </div>
 
         {/* 选择体检人 */}
         <div className="card">
-          <h3 className="font-medium mb-3">体检人</h3>
+          <h3 className="font-medium mb-3">{t('orders.examinee')}</h3>
           {examinees.length === 0 ? (
             <button onClick={() => setShowAddExaminee(true)} className="w-full py-3 border border-dashed border-gray-300 rounded-lg text-sm text-gray-400">
-              + 添加体检人
+              {t('orders.addExaminee')}
             </button>
           ) : (
             <div className="space-y-2">
@@ -76,8 +78,8 @@ export default function OrderCreate() {
                   className={`w-full flex items-center justify-between p-3 rounded-lg border ${selectedExaminee === ex.id ? 'border-primary-400 bg-primary-50' : 'border-gray-100'}`}
                 >
                   <div>
-                    <div className="text-sm font-medium">{ex.name}</div>
-                    <div className="text-xs text-gray-400">{ex.relationship} · {ex.phone}</div>
+                    <div className="text-sm font-medium">{td(ex.name)}</div>
+                    <div className="text-xs text-gray-400">{td(ex.relationship)} · {ex.phone}</div>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 ${selectedExaminee === ex.id ? 'bg-primary-500 border-primary-500' : 'border-gray-300'}`}>
                     {selectedExaminee === ex.id && <div className="text-white text-xs text-center leading-4">✓</div>}
@@ -85,7 +87,7 @@ export default function OrderCreate() {
                 </button>
               ))}
               <button onClick={() => setShowAddExaminee(true)} className="w-full py-2 text-sm text-primary-600">
-                + 添加体检人
+                {t('orders.addExaminee')}
               </button>
             </div>
           )}
@@ -93,7 +95,7 @@ export default function OrderCreate() {
 
         {/* 体检时间 */}
         <div className="card">
-          <h3 className="font-medium mb-3">体检时间</h3>
+          <h3 className="font-medium mb-3">{t('orders.examTime')}</h3>
           <div className="space-y-3">
             <input
               type="date"
@@ -106,7 +108,7 @@ export default function OrderCreate() {
               onChange={(e) => setExamTime(e.target.value)}
               className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
             >
-              <option value="">选择时段</option>
+              <option value="">{t('orders.selectTimeSlot')}</option>
               <option value="08:00-09:00">08:00-09:00</option>
               <option value="09:00-10:00">09:00-10:00</option>
               <option value="10:00-11:00">10:00-11:00</option>
@@ -119,7 +121,7 @@ export default function OrderCreate() {
       {/* 底部 */}
       <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-gray-100 px-4 py-3 flex items-center justify-between z-50">
         <div className="text-red-500 font-bold text-xl">¥{pkg.price}</div>
-        <button onClick={handleCreate} className="btn-primary">提交预约</button>
+        <button onClick={handleCreate} className="btn-primary">{t('orders.submitOrder')}</button>
       </div>
 
       {/* 添加体检人弹窗 */}
@@ -137,33 +139,34 @@ export default function OrderCreate() {
 }
 
 function AddExamineeModal({ onClose, onAdded }: { onClose: () => void; onAdded: () => void }) {
-  const [form, setForm] = useState({ name: '', id_card: '', phone: '', gender: 0, birthday: '', relationship: '本人' });
+  const { t, td } = useI18n();
+  const [form, setForm] = useState({ name: '', id_card: '', phone: '', gender: 0, birthday: '', relationship: t('examinees.self') });
 
   const handleSubmit = async () => {
-    if (!form.name) return alert('请输入姓名');
+    if (!form.name) return alert(t('examinees.nameRequired'));
     try {
       await examineeApi.create(form);
       onAdded();
     } catch (err: any) {
-      alert(err.message || '添加失败');
+      alert(err.message || t('examinees.addFailed'));
     }
   };
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center" onClick={onClose}>
       <div className="bg-white w-full max-w-[430px] rounded-t-2xl p-6" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-lg font-medium mb-4">添加体检人</h3>
+        <h3 className="text-lg font-medium mb-4">{t('examinees.addTitle')}</h3>
         <div className="space-y-3">
-          <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="姓名" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-          <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="身份证号" value={form.id_card} onChange={(e) => setForm({ ...form, id_card: e.target.value })} />
-          <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder="手机号" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder={t('examinees.namePlaceholder')} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+          <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder={t('examinees.idCardPlaceholder')} value={form.id_card} onChange={(e) => setForm({ ...form, id_card: e.target.value })} />
+          <input className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" placeholder={t('examinees.phonePlaceholder')} value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
           <select className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" value={form.relationship} onChange={(e) => setForm({ ...form, relationship: e.target.value })}>
-            <option>本人</option>
-            <option>父母</option>
-            <option>配偶</option>
-            <option>子女</option>
+            <option>{t('examinees.self')}</option>
+            <option>{t('examinees.parent')}</option>
+            <option>{t('examinees.spouse')}</option>
+            <option>{t('examinees.child')}</option>
           </select>
-          <button onClick={handleSubmit} className="w-full btn-primary">确认添加</button>
+          <button onClick={handleSubmit} className="w-full btn-primary">{t('examinees.confirmAdd')}</button>
         </div>
       </div>
     </div>

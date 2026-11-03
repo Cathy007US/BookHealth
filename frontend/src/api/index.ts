@@ -72,3 +72,16 @@ export const uploadApi = {
     return http.post('/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } });
   },
 };
+
+// ========== Admin API ==========
+export const adminApi = {
+  login: (data: { username: string; password: string }) =>
+    http.post('/admin/login', data),
+  // Exam Items
+  listExamItems: (params?: any) => http.get('/admin/exam-items', { params }),
+  createExamItem: (data: any) => http.post('/admin/exam-items', data),
+  deleteExamItems: (ids: number[]) => http.delete('/admin/exam-items', { data: { ids } }),
+  // Examinees (admin: all examinees)
+  listAllExaminees: (params?: any) => http.get('/admin/examinees', { params }),
+  deleteExaminees: (ids: number[]) => http.delete('/admin/examinees', { data: { ids } }),
+};

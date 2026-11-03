@@ -52,9 +52,9 @@ router.get('/:id', authRequired, async (req, res) => {
      WHERE o.id = $1 AND o.user_id = $2`,
     [id, req.user!.userId]
   );
-  if (!order) return fail(res, '订单不存在', 404);
+  if (!order) return fail(res, 'Order not found', 404);
 
-  // 加项信息
+  // Add-on items
   const addons = await query<any>(
     `SELECT oa.*, ei.name as item_name FROM order_addons oa
      LEFT JOIN exam_items ei ON oa.exam_item_id = ei.id WHERE oa.order_id = $1`,
@@ -64,7 +64,7 @@ router.get('/:id', authRequired, async (req, res) => {
   return success(res, { ...order, addons });
 });
 
-// 创建订单（选择体检人后添加订单）
+// Create order
 router.post('/', authRequired, async (req, res) => {
   const schema = z.object({
     package_id: z.number().int(),
@@ -75,22 +75,22 @@ router.post('/', authRequired, async (req, res) => {
     addon_item_ids: z.array(z.number().int()).optional(),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const { package_id, institution_id, examinee_id, exam_date, exam_time, addon_item_ids } = parsed.data;
 
-  // 验证体检人归属
+  // Verify examinee ownership
   const examinee = await queryOne<any>(
     'SELECT id FROM examinees WHERE id = $1 AND user_id = $2',
     [examinee_id, req.user!.userId]
   );
-  if (!examinee) return fail(res, '体检人不存在', 400);
+  if (!examinee) return fail(res, 'Examinee not found', 400);
 
-  // 获取套餐价格
+  // Get package price
   const pkg = await queryOne<any>('SELECT price FROM packages WHERE id = $1 AND status = 1', [package_id]);
-  if (!pkg) return fail(res, '套餐不存在', 400);
+  if (!pkg) return fail(res, 'Package not found', 400);
 
-  // 计算加项价格
+  // Calculate add-on price
   let addonPrice = 0;
   if (addon_item_ids && addon_item_ids.length > 0) {
     const items = await query<any>(
@@ -128,88 +128,88 @@ router.post('/', authRequired, async (req, res) => {
     return newOrder;
   });
 
-  return success(res, order, '订单创建成功');
+  return success(res, order, 'Order created successfully');
 });
 
-// 支付（模拟）
+// Payment (mock)
 router.post('/:id/pay', authRequired, async (req, res) => {
   const { id } = req.params;
   const schema = z.object({
     pay_method: z.enum(['wechat', 'alipay']),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const order = await queryOne<any>(
     'SELECT * FROM orders WHERE id = $1 AND user_id = $2 AND status = 0',
     [id, req.user!.userId]
   );
-  if (!order) return fail(res, '订单不存在或状态异常', 400);
+  if (!order) return fail(res, 'Order not found or invalid status', 400);
 
-  // 模拟支付成功
+  // Mock payment success
   await query(
     `UPDATE orders SET status = 1, pay_method = $1, pay_price = total_price, pay_time = NOW(), updated_at = NOW() WHERE id = $2`,
     [parsed.data.pay_method, id]
   );
 
   const updated = await queryOne<any>('SELECT * FROM orders WHERE id = $1', [id]);
-  return success(res, updated, '支付成功');
+  return success(res, updated, 'Payment successful');
 });
 
-// 更新体检时间
+// Update exam time
 router.put('/:id/exam-date', authRequired, async (req, res) => {
   const { id } = req.params;
   const schema = z.object({ exam_date: z.string(), exam_time: z.string().optional() });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const order = await queryOne<any>(
     'SELECT id FROM orders WHERE id = $1 AND user_id = $2 AND status IN (0, 1)',
     [id, req.user!.userId]
   );
-  if (!order) return fail(res, '订单不存在或状态异常', 400);
+  if (!order) return fail(res, 'Order not found or invalid status', 400);
 
   await query(
     'UPDATE orders SET exam_date = $1, exam_time = $2, updated_at = NOW() WHERE id = $3',
     [parsed.data.exam_date, parsed.data.exam_time || null, id]
   );
-  return success(res, null, '体检时间已更新');
+  return success(res, null, 'Exam time updated');
 });
 
-// 取消预约
+// Cancel booking
 router.put('/:id/cancel', authRequired, async (req, res) => {
   const { id } = req.params;
   const schema = z.object({ cancel_reason: z.string().optional() });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const order = await queryOne<any>(
     'SELECT id FROM orders WHERE id = $1 AND user_id = $2 AND status IN (0, 1)',
     [id, req.user!.userId]
   );
-  if (!order) return fail(res, '订单不存在或状态异常', 400);
+  if (!order) return fail(res, 'Order not found or invalid status', 400);
 
   await query(
     'UPDATE orders SET status = 3, cancel_reason = $1, updated_at = NOW() WHERE id = $2',
     [parsed.data.cancel_reason || null, id]
   );
-  return success(res, null, '预约已取消');
+  return success(res, null, 'Booking cancelled');
 });
 
-// 体检加项（为已有订单添加加项）
+// Add add-ons to existing order
 router.post('/:id/addons', authRequired, async (req, res) => {
   const { id } = req.params;
   const schema = z.object({
     addon_item_ids: z.array(z.number().int()).min(1),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const order = await queryOne<any>(
     'SELECT * FROM orders WHERE id = $1 AND user_id = $2 AND status IN (0, 1)',
     [id, req.user!.userId]
   );
-  if (!order) return fail(res, '订单不存在或状态异常', 400);
+  if (!order) return fail(res, 'Order not found or invalid status', 400);
 
   const items = await query<any>(
     'SELECT id, name, price FROM exam_items WHERE id = ANY($1::int[])',
@@ -233,7 +233,7 @@ router.post('/:id/addons', authRequired, async (req, res) => {
     [newAddonPrice, newTotalPrice, id]
   );
 
-  return success(res, { addon_price: newAddonPrice, total_price: newTotalPrice }, '加项成功');
+  return success(res, { addon_price: newAddonPrice, total_price: newTotalPrice }, 'Add-ons added successfully');
 });
 
 export default router;

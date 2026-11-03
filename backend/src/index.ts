@@ -44,13 +44,13 @@ app.use('/api/admin', adminRoutes);
 
 // 404
 app.use((req, res) => {
-  res.status(404).json({ code: 404, message: '接口不存在' });
+  res.status(404).json({ code: 404, message: 'API not found' });
 });
 
-// 错误处理
+// Error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('[Error]', err.message);
-  res.status(500).json({ code: 500, message: err.message || '服务器内部错误' });
+  res.status(500).json({ code: 500, message: err.message || 'Internal server error' });
 });
 
 // Socket.IO

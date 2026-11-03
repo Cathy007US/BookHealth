@@ -33,6 +33,6 @@ dist/
 build/
 
 # Project
-.workbuddy-ai/
+
 uploads/*
 !uploads/.gitkeep

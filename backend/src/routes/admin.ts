@@ -16,16 +16,16 @@ router.post('/login', async (req, res) => {
     password: z.string().min(1),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const admin = await queryOne<any>(
     'SELECT * FROM admins WHERE username = $1 AND status = 1',
     [parsed.data.username]
   );
-  if (!admin) return fail(res, '管理员不存在', 404);
+  if (!admin) return fail(res, 'Admin not found', 404);
 
   const ok = await bcrypt.compare(parsed.data.password, admin.password_hash);
-  if (!ok) return fail(res, '密码错误', 401);
+  if (!ok) return fail(res, 'Incorrect password', 401);
 
   await query('UPDATE admins SET last_login_at = NOW() WHERE id = $1', [admin.id]);
 
@@ -62,14 +62,14 @@ router.post('/admins', adminAuthRequired, adminSuperOnly, async (req, res) => {
     role: z.enum(['admin', 'editor']),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const hash = await bcrypt.hash(parsed.data.password, 10);
   const admin = await queryOne<any>(
     'INSERT INTO admins (username, password_hash, real_name, role) VALUES ($1, $2, $3, $4) RETURNING id, username, real_name, role',
     [parsed.data.username, hash, parsed.data.real_name || null, parsed.data.role]
   );
-  return success(res, admin, '添加成功');
+  return success(res, admin, 'Added successfully');
 });
 
 router.put('/admins/:id', adminAuthRequired, adminSuperOnly, async (req, res) => {
@@ -88,14 +88,14 @@ router.put('/admins/:id', adminAuthRequired, adminSuperOnly, async (req, res) =>
       [real_name, role, status ?? 1, id]
     );
   }
-  return success(res, null, '更新成功');
+  return success(res, null, 'Updated successfully');
 });
 
 router.delete('/admins', adminAuthRequired, adminSuperOnly, async (req, res) => {
   const { ids } = req.body as { ids: number[] };
-  if (!ids || !ids.length) return fail(res, '参数错误', 400);
+  if (!ids || !ids.length) return fail(res, 'Invalid parameters', 400);
   await query('DELETE FROM admins WHERE id = ANY($1::int[])', [ids]);
-  return success(res, null, '删除成功');
+  return success(res, null, 'Deleted successfully');
 });
 
 // ========== 体检机构管理 ==========
@@ -120,7 +120,7 @@ router.post('/institutions', adminAuthRequired, async (req, res) => {
     [name, parent_id || null, logo || null, description || null, address || null, phone || null,
      city_id || null, longitude || null, latitude || null, images || null, is_recommended || false, status ?? 1]
   );
-  return success(res, inst, '添加成功');
+  return success(res, inst, 'Added successfully');
 });
 
 router.put('/institutions/:id', adminAuthRequired, async (req, res) => {
@@ -131,20 +131,20 @@ router.put('/institutions/:id', adminAuthRequired, async (req, res) => {
      city_id=$7, longitude=$8, latitude=$9, images=$10, is_recommended=$11, status=$12, updated_at=NOW() WHERE id=$13`,
     [name, parent_id || null, logo, description, address, phone, city_id, longitude, latitude, images, is_recommended ?? false, status ?? 1, id]
   );
-  return success(res, null, '更新成功');
+  return success(res, null, 'Updated successfully');
 });
 
 router.delete('/institutions', adminAuthRequired, async (req, res) => {
   const { ids } = req.body as { ids: number[] };
   await query('DELETE FROM institutions WHERE id = ANY($1::int[])', [ids]);
-  return success(res, null, '删除成功');
+  return success(res, null, 'Deleted successfully');
 });
 
 router.put('/institutions/:id/status', adminAuthRequired, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body as { status: number };
   await query('UPDATE institutions SET status = $1, updated_at = NOW() WHERE id = $2', [status, id]);
-  return success(res, null, '状态已更新');
+  return success(res, null, 'Status updated');
 });
 
 // ========== 体检项管理 ==========
@@ -166,7 +166,7 @@ router.post('/exam-items', adminAuthRequired, async (req, res) => {
     'INSERT INTO exam_items (name, code, description, price, category, status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
     [name, code || null, description || null, price || 0, category || null, status ?? 1]
   );
-  return success(res, item, '添加成功');
+  return success(res, item, 'Added successfully');
 });
 
 router.put('/exam-items/:id', adminAuthRequired, async (req, res) => {
@@ -176,20 +176,20 @@ router.put('/exam-items/:id', adminAuthRequired, async (req, res) => {
     'UPDATE exam_items SET name=$1, code=$2, description=$3, price=$4, category=$5, status=$6, updated_at=NOW() WHERE id=$7',
     [name, code, description, price, category, status ?? 1, id]
   );
-  return success(res, null, '更新成功');
+  return success(res, null, 'Updated successfully');
 });
 
 router.delete('/exam-items', adminAuthRequired, async (req, res) => {
   const { ids } = req.body as { ids: number[] };
   await query('DELETE FROM exam_items WHERE id = ANY($1::int[])', [ids]);
-  return success(res, null, '删除成功');
+  return success(res, null, 'Deleted successfully');
 });
 
 router.put('/exam-items/:id/status', adminAuthRequired, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body as { status: number };
   await query('UPDATE exam_items SET status = $1, updated_at = NOW() WHERE id = $2', [status, id]);
-  return success(res, null, '状态已更新');
+  return success(res, null, 'Status updated');
 });
 
 // ========== 套餐管理 ==========
@@ -227,7 +227,7 @@ router.post('/packages', adminAuthRequired, async (req, res) => {
     }
   }
 
-  return success(res, pkg, '添加成功');
+  return success(res, pkg, 'Added successfully');
 });
 
 router.put('/packages/:id', adminAuthRequired, async (req, res) => {
@@ -239,20 +239,20 @@ router.put('/packages/:id', adminAuthRequired, async (req, res) => {
     [name, category_id, description, price, original_price, cover_image, detail_images,
      content, suitable_crowd, is_recommended ?? false, status ?? 1, id]
   );
-  return success(res, null, '更新成功');
+  return success(res, null, 'Updated successfully');
 });
 
 router.delete('/packages', adminAuthRequired, async (req, res) => {
   const { ids } = req.body as { ids: number[] };
   await query('DELETE FROM packages WHERE id = ANY($1::int[])', [ids]);
-  return success(res, null, '删除成功');
+  return success(res, null, 'Deleted successfully');
 });
 
 router.put('/packages/:id/status', adminAuthRequired, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body as { status: number };
   await query('UPDATE packages SET status = $1, updated_at = NOW() WHERE id = $2', [status, id]);
-  return success(res, null, '状态已更新');
+  return success(res, null, 'Status updated');
 });
 
 // ========== 标准指标管理 ==========
@@ -274,7 +274,7 @@ router.post('/metrics', adminAuthRequired, async (req, res) => {
     'INSERT INTO standard_metrics (name, code, unit, reference_range, is_compare, status) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *',
     [name, code || null, unit || null, reference_range || null, is_compare ?? true, status ?? 1]
   );
-  return success(res, metric, '添加成功');
+  return success(res, metric, 'Added successfully');
 });
 
 router.put('/metrics/:id', adminAuthRequired, async (req, res) => {
@@ -284,13 +284,13 @@ router.put('/metrics/:id', adminAuthRequired, async (req, res) => {
     'UPDATE standard_metrics SET name=$1, code=$2, unit=$3, reference_range=$4, is_compare=$5, status=$6 WHERE id=$7',
     [name, code, unit, reference_range, is_compare ?? true, status ?? 1, id]
   );
-  return success(res, null, '更新成功');
+  return success(res, null, 'Updated successfully');
 });
 
 router.delete('/metrics', adminAuthRequired, async (req, res) => {
   const { ids } = req.body as { ids: number[] };
   await query('DELETE FROM standard_metrics WHERE id = ANY($1::int[])', [ids]);
-  return success(res, null, '删除成功');
+  return success(res, null, 'Deleted successfully');
 });
 
 // ========== 预约信息查询 ==========
@@ -338,42 +338,68 @@ router.put('/orders/:id/status', adminAuthRequired, async (req, res) => {
   const { id } = req.params;
   const { status } = req.body as { status: number };
   await query('UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2', [status, id]);
-  return success(res, null, '订单状态已更新');
+  return success(res, null, 'Order status updated');
 });
 
 router.put('/orders/:id/exam-date', adminAuthRequired, async (req, res) => {
   const { id } = req.params;
   const { exam_date, exam_time } = req.body as { exam_date: string; exam_time?: string };
   await query('UPDATE orders SET exam_date = $1, exam_time = $2, updated_at = NOW() WHERE id = $3', [exam_date, exam_time || null, id]);
-  return success(res, null, '体检时间已更新');
+  return success(res, null, 'Exam time updated');
 });
 
 // ========== 左侧菜单 ==========
 router.get('/menu', adminAuthRequired, (req, res) => {
   const menu = [
     {
-      key: 'dashboard', label: '工作台', icon: 'dashboard', path: '/admin/dashboard',
+      key: 'dashboard', label: 'Dashboard', icon: 'dashboard', path: '/admin/dashboard',
     },
     {
-      key: 'institution', label: '体检机构管理', icon: 'hospital', path: '/admin/institutions',
+      key: 'institution', label: 'Institutions', icon: 'hospital', path: '/admin/institutions',
     },
     {
-      key: 'exam-item', label: '体检项管理', icon: 'list', path: '/admin/exam-items',
+      key: 'exam-item', label: 'Exam Items', icon: 'list', path: '/admin/exam-items',
     },
     {
-      key: 'package', label: '套餐管理', icon: 'shopping', path: '/admin/packages',
+      key: 'examinee', label: 'Examinees', icon: 'users', path: '/admin/examinees',
     },
     {
-      key: 'metric', label: '标准指标管理', icon: 'bar-chart', path: '/admin/metrics',
+      key: 'package', label: 'Packages', icon: 'shopping', path: '/admin/packages',
     },
     {
-      key: 'order', label: '预约信息查询', icon: 'calendar', path: '/admin/orders',
+      key: 'metric', label: 'Standard Metrics', icon: 'bar-chart', path: '/admin/metrics',
     },
     {
-      key: 'admin', label: '管理员管理', icon: 'user', path: '/admin/admins',
+      key: 'order', label: 'Bookings', icon: 'calendar', path: '/admin/orders',
+    },
+    {
+      key: 'admin', label: 'Admins', icon: 'user', path: '/admin/admins',
     },
   ];
   return success(res, menu);
+});
+
+// ========== 体检人管理（后台） ==========
+router.get('/examinees', adminAuthRequired, async (req, res) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const pageSize = parseInt(req.query.pageSize as string) || 50;
+  const totalRow = await queryOne<any>('SELECT COUNT(*)::int as total FROM examinees');
+  const total = totalRow?.total || 0;
+  const list = await query<any>(
+    `SELECT e.*, u.phone as user_phone, u.nickname as user_nickname
+     FROM examinees e
+     LEFT JOIN users u ON e.user_id = u.id
+     ORDER BY e.id DESC LIMIT $1 OFFSET $2`,
+    [pageSize, (page - 1) * pageSize]
+  );
+  return paginate(res, list, total, page, pageSize);
+});
+
+router.delete('/examinees', adminAuthRequired, async (req, res) => {
+  const { ids } = req.body as { ids: number[] };
+  if (!ids || !ids.length) return fail(res, 'Invalid parameters', 400);
+  await query('DELETE FROM examinees WHERE id = ANY($1::int[])', [ids]);
+  return success(res, null, 'Deleted successfully');
 });
 
 export default router;

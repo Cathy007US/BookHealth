@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authApi } from '../api';
 import { useStore } from '../store';
+import { useI18n } from '../i18n';
+import LanguageToggle from '../components/LanguageToggle';
 
 export default function Login() {
   const [mode, setMode] = useState<'password' | 'code'>('code');
@@ -12,10 +14,11 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { setAuth } = useStore();
+  const { t } = useI18n();
 
   const sendCode = async () => {
     if (!/^1\d{10}$/.test(phone)) {
-      alert('请输入正确的手机号');
+      alert(t('login.invalidPhone'));
       return;
     }
     try {
@@ -31,7 +34,7 @@ export default function Login() {
         });
       }, 1000);
     } catch (err: any) {
-      alert(err.message || '发送失败');
+      alert(err.message || t('login.sendFailed'));
     }
   };
 
@@ -47,18 +50,21 @@ export default function Login() {
       setAuth(res.data.token, res.data.user);
       navigate('/');
     } catch (err: any) {
-      alert(err.message || '登录失败');
+      alert(err.message || t('login.loginFailed'));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary-500 to-primary-700 flex flex-col items-center justify-center px-6">
+    <div className="min-h-screen bg-gradient-to-t from-primary-500 to-primary-700 flex flex-col items-center justify-center px-6">
+      <div className="absolute top-6 right-4">
+        <LanguageToggle />
+      </div>
       <div className="text-center mb-12">
         <div className="text-5xl mb-3">🏥</div>
-        <h1 className="text-2xl font-bold text-white">BookHealth</h1>
-        <p className="text-primary-100 mt-2">专业体检预约平台</p>
+        <h1 className="text-2xl font-bold text-white">{t('app.name')}</h1>
+        <p className="text-primary-100 mt-2">{t('app.tagline')}</p>
       </div>
 
       <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-lg">
@@ -67,13 +73,13 @@ export default function Login() {
             className={`flex-1 py-2 text-sm font-medium ${mode === 'code' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-400'}`}
             onClick={() => setMode('code')}
           >
-            验证码登录
+            {t('login.codeMode')}
           </button>
           <button
             className={`flex-1 py-2 text-sm font-medium ${mode === 'password' ? 'text-primary-600 border-b-2 border-primary-600' : 'text-gray-400'}`}
             onClick={() => setMode('password')}
           >
-            密码登录
+            {t('login.passwordMode')}
           </button>
         </div>
 
@@ -81,7 +87,7 @@ export default function Login() {
           <div>
             <input
               type="tel"
-              placeholder="请输入手机号"
+              placeholder={t('login.phonePlaceholder')}
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary-400"
@@ -92,7 +98,7 @@ export default function Login() {
             <div>
               <input
                 type="password"
-                placeholder="请输入密码"
+                placeholder={t('login.passwordPlaceholder')}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-primary-400"
@@ -102,7 +108,7 @@ export default function Login() {
             <div className="flex gap-3">
               <input
                 type="text"
-                placeholder="验证码"
+                placeholder={t('login.codePlaceholder')}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
                 maxLength={6}
@@ -113,7 +119,7 @@ export default function Login() {
                 disabled={countdown > 0}
                 className="px-4 py-3 text-sm text-primary-600 border border-primary-200 rounded-xl whitespace-nowrap disabled:text-gray-400 disabled:border-gray-200"
               >
-                {countdown > 0 ? `${countdown}s` : '发送验证码'}
+                {countdown > 0 ? `${countdown}s` : t('login.sendCode')}
               </button>
             </div>
           )}
@@ -123,7 +129,7 @@ export default function Login() {
             disabled={loading}
             className="w-full btn-primary"
           >
-            {loading ? '登录中...' : '登录'}
+            {loading ? t('login.loggingIn') : t('login.login')}
           </button>
         </div>
       </div>

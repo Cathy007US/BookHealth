@@ -7,6 +7,8 @@ services:
   db:
     image: postgres:16-alpine
     restart: always
+    env_file:
+      - bookhealth-api.env
     environment:
       POSTGRES_DB: bookhealth
       POSTGRES_USER: postgres
@@ -26,11 +28,13 @@ services:
   # 后端 API
   # ============================
   backend:
-    build: ./backend
+    image: health-backend:latest
     restart: always
     depends_on:
       db:
         condition: service_healthy
+    env_file:
+      - bookhealth-api.env
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -46,7 +50,7 @@ services:
       UPLOAD_DIR: uploads
       MAX_FILE_SIZE: 10485760
     ports:
-      - "3000:3000"
+      - "3002:3000"
     volumes:
       - backend_uploads:/app/uploads
 
@@ -54,14 +58,12 @@ services:
   # 前端 Nginx
   # ============================
   frontend:
-    build: ./frontend
+    image: health-frontend:latest
     restart: always
     depends_on:
       - backend
     ports:
-      - "8080:80"
-    volumes:
-      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf
+      - "8090:80"
 
 volumes:
   pgdata:

@@ -40,9 +40,9 @@ router.get('/:id', authRequired, async (req, res) => {
      WHERE r.id = $1 AND r.user_id = $2`,
     [id, req.user!.userId]
   );
-  if (!report) return fail(res, '报告不存在', 404);
+  if (!report) return fail(res, 'Report not found', 404);
 
-  // 报告项目明细
+  // Report item details
   const items = await query<any>(
     `SELECT ri.*, ei.category FROM report_items ri
      LEFT JOIN exam_items ei ON ri.exam_item_id = ei.id
@@ -53,21 +53,21 @@ router.get('/:id', authRequired, async (req, res) => {
   return success(res, { ...report, items });
 });
 
-// 发送到邮箱（模拟）
+// Send report to email (mock)
 router.post('/:id/send-email', authRequired, async (req, res) => {
   const { id } = req.params;
   const { email } = req.body as { email: string };
-  if (!email) return fail(res, '邮箱不能为空', 400);
+  if (!email) return fail(res, 'Email cannot be empty', 400);
 
   const report = await queryOne<any>(
     'SELECT pdf_url FROM reports WHERE id = $1 AND user_id = $2',
     [id, req.user!.userId]
   );
-  if (!report) return fail(res, '报告不存在', 404);
+  if (!report) return fail(res, 'Report not found', 404);
 
-  // 模拟发送邮件
-  console.log(`[Email] 发送报告 ${id} 到 ${email}`);
-  return success(res, null, '已发送到邮箱');
+  // Mock email send
+  console.log(`[Email] Send report ${id} to ${email}`);
+  return success(res, null, 'Sent to email');
 });
 
 export default router;

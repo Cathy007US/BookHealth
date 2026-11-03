@@ -17,11 +17,11 @@ router.post('/wx-login', async (req, res) => {
     avatar: z.string().optional(),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const { code, nickname, avatar } = parsed.data;
 
-  // 模拟微信 code 换 openid（实际应调用微信 API）
+  // Mock WeChat code-to-openid (should call WeChat API in production)
   // const openid = await getWxOpenid(code, config.wx.appid, config.wx.secret);
   const openid = `wx_${code.slice(0, 20)}`;
 
@@ -33,7 +33,7 @@ router.post('/wx-login', async (req, res) => {
   if (!user) {
     user = await queryOne<any>(
       `INSERT INTO users (openid, nickname, avatar) VALUES ($1, $2, $3) RETURNING id, openid, nickname, avatar, phone, gender`,
-      [openid, nickname || '微信用户', avatar || '']
+      [openid, nickname || 'WeChat User', avatar || '']
     );
   }
 
@@ -51,7 +51,7 @@ router.post('/login', async (req, res) => {
     password: z.string().min(6),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const { account, password } = parsed.data;
 
@@ -59,12 +59,12 @@ router.post('/login', async (req, res) => {
     'SELECT * FROM users WHERE phone = $1 OR nickname = $1',
     [account]
   );
-  if (!user) return fail(res, '用户不存在', 404);
+  if (!user) return fail(res, 'User not found', 404);
 
-  if (!user.password_hash) return fail(res, '请使用验证码登录', 400);
+  if (!user.password_hash) return fail(res, 'Please use verification code login', 400);
 
   const ok = await bcrypt.compare(password, user.password_hash);
-  if (!ok) return fail(res, '密码错误', 401);
+  if (!ok) return fail(res, 'Incorrect password', 401);
 
   const token = jwt.sign({ userId: user.id, phone: user.phone }, config.jwt.secret, {
     expiresIn: config.jwt.expiresIn as any,
@@ -80,7 +80,7 @@ router.post('/login', async (req, res) => {
 router.post('/send-code', async (req, res) => {
   const schema = z.object({ phone: z.string().regex(/^1\d{10}$/) });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '手机号格式错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid phone number format', 400);
 
   const { phone } = parsed.data;
   const code = Math.random().toString().slice(2, 8);
@@ -90,10 +90,10 @@ router.post('/send-code', async (req, res) => {
     [phone, code]
   );
 
-  // 实际应调用短信服务发送
+  // Should call SMS service in production
   console.log(`[SMS] ${phone}: ${code}`);
 
-  return success(res, null, '验证码已发送');
+  return success(res, null, 'Verification code sent');
 });
 
 // 手机号+验证码登录
@@ -103,7 +103,7 @@ router.post('/login-by-code', async (req, res) => {
     code: z.string().length(6),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const { phone, code } = parsed.data;
 
@@ -111,7 +111,7 @@ router.post('/login-by-code', async (req, res) => {
     `SELECT * FROM sms_codes WHERE phone = $1 AND code = $2 AND expires_at > NOW() AND used = FALSE ORDER BY id DESC LIMIT 1`,
     [phone, code]
   );
-  if (!record) return fail(res, '验证码错误或已过期', 400);
+  if (!record) return fail(res, 'Invalid or expired verification code', 400);
 
   await query('UPDATE sms_codes SET used = TRUE WHERE id = $1', [record.id]);
 
@@ -119,7 +119,7 @@ router.post('/login-by-code', async (req, res) => {
   if (!user) {
     user = await queryOne<any>(
       'INSERT INTO users (phone, nickname) VALUES ($1, $2) RETURNING *',
-      [phone, `用户${phone.slice(-4)}`]
+      [phone, `User${phone.slice(-4)}`]
     );
   }
 
@@ -139,11 +139,11 @@ router.get('/profile', authRequired, async (req, res) => {
     'SELECT id, openid, phone, nickname, avatar, gender, created_at FROM users WHERE id = $1',
     [req.user!.userId]
   );
-  if (!user) return fail(res, '用户不存在', 404);
+  if (!user) return fail(res, 'User not found', 404);
   return success(res, user);
 });
 
-// ========== 体检人管理 ==========
+// ========== Examinee Management ==========
 
 // 获取体检人列表
 router.get('/examinees', authRequired, async (req, res) => {
@@ -165,7 +165,7 @@ router.post('/examinees', authRequired, async (req, res) => {
     relationship: z.string().optional(),
   });
   const parsed = schema.safeParse(req.body);
-  if (!parsed.success) return fail(res, '参数错误', 400);
+  if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
   const { name, id_card, phone, gender, birthday, relationship } = parsed.data;
 
@@ -174,14 +174,14 @@ router.post('/examinees', authRequired, async (req, res) => {
      VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
     [req.user!.userId, name, id_card || null, phone || null, gender || 0, birthday || null, relationship || null]
   );
-  return success(res, examinee, '添加成功');
+  return success(res, examinee, 'Added successfully');
 });
 
-// 删除体检人
+// Delete examinee
 router.delete('/examinees/:id', authRequired, async (req, res) => {
   const { id } = req.params;
   await query('DELETE FROM examinees WHERE id = $1 AND user_id = $2', [id, req.user!.userId]);
-  return success(res, null, '删除成功');
+  return success(res, null, 'Deleted successfully');
 });
 
 export default router;

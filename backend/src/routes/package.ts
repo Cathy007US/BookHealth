@@ -67,16 +67,16 @@ router.get('/:id', async (req, res) => {
      LEFT JOIN package_categories pc ON p.category_id = pc.id WHERE p.id = $1`,
     [id]
   );
-  if (!pkg) return fail(res, '套餐不存在', 404);
+  if (!pkg) return fail(res, 'Package not found', 404);
 
-  // 套餐包含的体检项
+  // Included exam items
   const items = await query<any>(
     `SELECT ei.id, ei.name, ei.code, ei.description, ei.category FROM package_items pi
      INNER JOIN exam_items ei ON pi.exam_item_id = ei.id WHERE pi.package_id = $1`,
     [id]
   );
 
-  // 适用机构
+  // Applicable institutions
   const institutions = await query<any>(
     `SELECT i.id, i.name, i.logo, i.address, i.phone FROM package_institutions pin
      INNER JOIN institutions i ON pin.institution_id = i.id WHERE pin.package_id = $1 AND i.status = 1`,
@@ -86,7 +86,7 @@ router.get('/:id', async (req, res) => {
   return success(res, { ...pkg, exam_items: items, institutions });
 });
 
-// 获取加项包列表
+// Get add-on packages
 router.get('/:id/addons', async (req, res) => {
   const { id } = req.params;
   const list = await query<any>(

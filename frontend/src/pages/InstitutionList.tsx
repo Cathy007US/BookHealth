@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { institutionApi } from '../api';
 import Header from '../components/Header';
+import { useI18n } from '../i18n';
 
 export default function InstitutionList() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { t, td } = useI18n();
   const [list, setList] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [keyword, setKeyword] = useState('');
@@ -25,14 +27,14 @@ export default function InstitutionList() {
   }, []);
 
   return (
-    <div className="pb-4">
-      <Header title="体检机构" back={false} />
+    <div className="pb-16">
+      <Header title={t('institutions.title')} back={false} />
       <div className="px-4 py-3">
         <div className="bg-white rounded-xl flex items-center px-4 py-2">
           <span className="text-gray-400">🔍</span>
           <input
             type="text"
-            placeholder="搜索机构名称"
+            placeholder={t('institutions.searchPlaceholder')}
             value={keyword}
             onChange={(e) => setKeyword(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && loadData(keyword)}
@@ -43,9 +45,9 @@ export default function InstitutionList() {
 
       <div className="px-4 space-y-3">
         {loading ? (
-          <div className="text-center text-gray-400 py-10">加载中...</div>
+          <div className="text-center text-gray-400 py-10">{t('common.loading')}</div>
         ) : list.length === 0 ? (
-          <div className="text-center text-gray-400 py-10">暂无机构</div>
+          <div className="text-center text-gray-400 py-10">{t('institutions.noData')}</div>
         ) : (
           list.map((inst) => (
             <button
@@ -55,9 +57,9 @@ export default function InstitutionList() {
             >
               <div className="w-20 h-20 bg-primary-50 flex items-center justify-center text-3xl">🏥</div>
               <div className="flex-1 p-3 text-left">
-                <div className="text-sm font-medium text-gray-800">{inst.name}</div>
+                <div className="text-sm font-medium text-gray-800">{td(inst.name)}</div>
                 <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                  📍 {inst.address || '地址待完善'}
+                  📍 {td(inst.address) || t('institutions.addressPending')}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">📞 {inst.phone || ''}</div>
               </div>

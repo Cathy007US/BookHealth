@@ -1,29 +1,34 @@
 import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
-import TabBar from '../components/TabBar';
+import { useI18n } from '../i18n';
+import LanguageToggle from '../components/LanguageToggle';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { user, logout } = useStore();
+  const { t } = useI18n();
 
   const menu = [
-    { label: '我的预约', icon: '📅', path: '/orders' },
-    { label: '我的报告', icon: '📄', path: '/reports' },
-    { label: '体检人管理', icon: '👥', path: '/examinees' },
-    { label: '报告解读', icon: '💬', path: '/consultations' },
-    { label: '联系客服', icon: '📞', path: '' },
-    { label: '关于我们', icon: 'ℹ️', path: '' },
+    { label: t('profile.myOrders'), icon: '📅', path: '/orders' },
+    { label: t('profile.myReports'), icon: '📄', path: '/reports' },
+    { label: t('profile.examineeManage'), icon: '👥', path: '/examinees' },
+    { label: t('profile.reportInterpret'), icon: '💬', path: '/consultations' },
+    { label: t('profile.contactService'), icon: '📞', path: '' },
+    { label: t('profile.aboutUs'), icon: 'ℹ️', path: '' },
   ];
 
   return (
     <div className="pb-16">
       <div className="bg-gradient-to-b from-primary-500 to-primary-600 px-4 pt-8 pb-12 rounded-b-3xl">
+        <div className="flex items-center justify-between mb-4">
+          <LanguageToggle />
+        </div>
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl">
             {user?.avatar ? <img src={user.avatar} className="w-full h-full rounded-full" /> : '👤'}
           </div>
           <div className="text-white">
-            <div className="text-lg font-medium">{user?.nickname || '未登录'}</div>
+            <div className="text-lg font-medium">{user?.nickname || t('profile.notLoggedIn')}</div>
             <div className="text-sm text-primary-100">{user?.phone || ''}</div>
           </div>
         </div>
@@ -53,11 +58,9 @@ export default function Profile() {
           }}
           className="w-full mt-4 py-3 text-sm text-red-500 bg-white rounded-xl shadow-sm"
         >
-          退出登录
+          {t('profile.logout')}
         </button>
       </div>
-
-      <TabBar />
     </div>
   );
 }

@@ -7,10 +7,13 @@ const http = axios.create({
   timeout: 15000,
 });
 
-// 请求拦截：附加 token
+// 请求拦截：附加 token（优先 adminToken，其次 user token）
 http.interceptors.request.use((config) => {
+  const adminToken = localStorage.getItem('adminToken');
   const token = localStorage.getItem('token');
-  if (token) {
+  if (adminToken && config.url?.startsWith('/admin')) {
+    config.headers.Authorization = `Bearer ${adminToken}`;
+  } else if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
@@ -21,9 +24,16 @@ http.interceptors.response.use(
   (response) => response.data,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+      const url = error.config?.url || '';
+      if (url.startsWith('/admin')) {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('adminUser');
+        window.location.href = '/admin/login';
+      } else {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error.response?.data || error);
   }

@@ -52,9 +52,9 @@ router.get('/:id', async (req, res) => {
      WHERE i.id = $1`,
     [id]
   );
-  if (!inst) return fail(res, '机构不存在', 404);
+  if (!inst) return fail(res, 'Institution not found', 404);
 
-  // 获取该机构下的套餐
+  // Get packages for this institution
   const packages = await query<any>(
     `SELECT p.id, p.name, p.price, p.original_price, p.cover_image, p.suitable_crowd
      FROM packages p

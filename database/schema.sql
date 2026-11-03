@@ -294,32 +294,32 @@ CREATE INDEX IF NOT EXISTS idx_sms_codes_phone ON sms_codes(phone);
 -- 初始数据
 -- ============================================
 INSERT INTO provinces (name, code) VALUES
-    ('北京', '110000'),
-    ('上海', '310000'),
-    ('广东', '440000'),
-    ('浙江', '330000'),
-    ('江苏', '320000')
+    ('Beijing', '110000'),
+    ('Shanghai', '310000'),
+    ('Guangdong', '440000'),
+    ('Zhejiang', '330000'),
+    ('Jiangsu', '320000')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO cities (province_id, name, code) VALUES
-    (1, '北京市', '110100'),
-    (2, '上海市', '310100'),
-    (3, '广州市', '440100'),
-    (3, '深圳市', '440300'),
-    (4, '杭州市', '330100'),
-    (5, '南京市', '320100')
+    (1, 'Beijing', '110100'),
+    (2, 'Shanghai', '310100'),
+    (3, 'Guangzhou', '440100'),
+    (3, 'Shenzhen', '440300'),
+    (4, 'Hangzhou', '330100'),
+    (5, 'Nanjing', '320100')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO package_categories (name, sort_order) VALUES
-    ('入职体检', 1),
-    ('青年体检', 2),
-    ('中老年体检', 3),
-    ('女性体检', 4),
-    ('男性体检', 5),
-    ('家庭体检', 6)
+    ('Pre-employment Checkup', 1),
+    ('Youth Checkup', 2),
+    ('Middle-aged & Senior Checkup', 3),
+    ('Female Checkup', 4),
+    ('Male Checkup', 5),
+    ('Family Checkup', 6)
 ON CONFLICT DO NOTHING;
 
--- 初始管理员（密码: admin123，bcrypt hash）
+-- Initial admin (password: admin123, bcrypt hash)
 INSERT INTO admins (username, password_hash, real_name, role) VALUES
-    ('admin', '$2b$10$WQqPvXxQvQXxQvQXxQvQXeQXxQvQXxQvQXxQvQXxQvQXxQvQXx', '超级管理员', 'admin')
+    ('admin', '$2b$10$WQqPvXxQvQXxQvQXxQvQXeQXxQvQXxQvQXxQvQXxQvQXxQvQXx', 'Super Admin', 'admin')
 ON CONFLICT DO NOTHING;

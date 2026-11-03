@@ -32,14 +32,14 @@ router.post('/consultations', authRequired, async (req, res) => {
     report_id?: number;
     content: string;
   };
-  if (!doctor_id || !content) return fail(res, '参数错误', 400);
+  if (!doctor_id || !content) return fail(res, 'Invalid parameters', 400);
 
   const consultation = await queryOne<any>(
     `INSERT INTO consultations (user_id, doctor_id, report_id, content, status)
      VALUES ($1, $2, $3, $4, 0) RETURNING *`,
     [req.user!.userId, doctor_id, report_id || null, content]
   );
-  return success(res, consultation, '咨询已提交');
+  return success(res, consultation, 'Consultation submitted');
 });
 
 export default router;

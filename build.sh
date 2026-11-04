@@ -27,7 +27,7 @@ echo ">>> 打包部署文件..."
 tar czf bookhealth-deploy.tar.gz \
   docker-compose.yml \
   bookhealth-api.env \
-  database/schema.sql \
+  database/*.sql \
   deploy/nginx-subdomain.conf \
   health-images.tar.gz
 

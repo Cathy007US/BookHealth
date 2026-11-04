@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import { useI18n } from '../i18n';
 import Icon from '../components/Icon';
 import CoverImage from '../components/CoverImage';
+import { institutionImage } from '../utils/localImages';
 
 export default function InstitutionList() {
   const navigate = useNavigate();
@@ -51,14 +52,14 @@ export default function InstitutionList() {
         ) : list.length === 0 ? (
           <div className="text-center text-gray-400 py-10">{t('institutions.noData')}</div>
         ) : (
-          list.map((inst) => (
+          list.map((inst, idx) => (
             <button
               key={inst.id}
               onClick={() => navigate(`/institutions/${inst.id}`)}
               className="w-full bg-white rounded-xl shadow-sm overflow-hidden flex"
             >
               <CoverImage
-                src={inst.logo}
+                src={institutionImage(idx)}
                 fallbackIcon="tijianzhongxin"
                 className="w-20 h-20 shrink-0"
               />

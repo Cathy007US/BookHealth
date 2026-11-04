@@ -6,6 +6,7 @@ import LanguageToggle from '../components/LanguageToggle';
 import Icon from '../components/Icon';
 import CoverImage from '../components/CoverImage';
 import bannerIcon from '../assets/ll2.png';
+import { institutionImage, packageImage } from '../utils/localImages';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -128,15 +129,15 @@ export default function Home() {
             {t('home.viewAll')}
           </button>
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-2">
-          {hotInstitutions.map((inst: any) => (
+        <div className="flex gap-3 overflow-x-auto pb-2 snap-x snap-mandatory">
+          {hotInstitutions.map((inst: any, idx: number) => (
             <button
               key={inst.id}
               onClick={() => navigate(`/institutions/${inst.id}`)}
-              className="min-w-[140px] bg-white rounded-xl shadow-sm overflow-hidden"
+              className="w-[calc((100%_-_1.5rem)/3)] shrink-0 snap-start bg-white rounded-xl shadow-sm overflow-hidden"
             >
               <CoverImage
-                src={inst.logo}
+                src={institutionImage(idx)}
                 fallbackIcon="tijianzhongxin"
                 className="h-20 w-full"
               />
@@ -158,14 +159,14 @@ export default function Home() {
           </button>
         </div>
         <div className="space-y-3">
-          {hotPackages.map((pkg: any) => (
+          {hotPackages.map((pkg: any, idx: number) => (
             <button
               key={pkg.id}
               onClick={() => navigate(`/packages/${pkg.id}`)}
               className="w-full bg-white rounded-xl shadow-sm overflow-hidden flex"
             >
               <CoverImage
-                src={pkg.cover_image}
+                src={packageImage(idx)}
                 fallbackIcon="tijian"
                 className="w-24 h-24 shrink-0"
               />

@@ -1,3 +1,5 @@
+import { useEffect, useState } from 'react';
+
 interface CoverImageProps {
   /** 图片地址：可以是 base64 data URL 或普通 http(s) 图片 URL */
   src?: string | null;
@@ -12,7 +14,7 @@ interface CoverImageProps {
 /**
  * 套餐/机构配图组件
  * - cover_image 为 base64 data URL 时直接渲染 <img>
- * - 无图时回退到 iconfont 图标（保持原有视觉）
+ * - 无图或加载失败时回退到 iconfont 图标（保持原有视觉）
  */
 export default function CoverImage({
   src,
@@ -21,7 +23,18 @@ export default function CoverImage({
   style,
   fit = 'cover',
 }: CoverImageProps) {
-  const hasImage = !!src && (src.startsWith('data:image') || src.startsWith('http'));
+  const [broken, setBroken] = useState(false);
+
+  // src 变化时重置失败状态
+  useEffect(() => {
+    setBroken(false);
+  }, [src]);
+
+  // 支持三种来源：base64 data URL、完整 http(s) URL、站内绝对路径（/assets/xxx.png）
+  const hasImage =
+    !broken &&
+    !!src &&
+    (src.startsWith('data:image') || src.startsWith('/') || src.startsWith('http'));
 
   if (!hasImage) {
     if (!fallbackIcon) {
@@ -44,6 +57,7 @@ export default function CoverImage({
         loading="lazy"
         className="w-full h-full"
         style={{ objectFit: fit, objectPosition: 'center' }}
+        onError={() => setBroken(true)}
       />
     </div>
   );

@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import { useI18n } from '../i18n';
 import Icon from '../components/Icon';
 import CoverImage from '../components/CoverImage';
+import { packageImage } from '../utils/localImages';
 
 export default function PackageList() {
   const navigate = useNavigate();
@@ -59,14 +60,14 @@ export default function PackageList() {
         ) : list.length === 0 ? (
           <div className="text-center text-gray-400 py-10">{t('packages.noData')}</div>
         ) : (
-          list.map((pkg) => (
+          list.map((pkg, idx) => (
             <button
               key={pkg.id}
               onClick={() => navigate(`/packages/${pkg.id}`)}
               className="w-full bg-white rounded-xl shadow-sm overflow-hidden flex"
             >
               <CoverImage
-                src={pkg.cover_image}
+                src={packageImage(idx)}
                 fallbackIcon="tijian"
                 className="w-28 h-28 shrink-0"
               />

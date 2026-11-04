@@ -36,3 +36,13 @@ build/
 
 uploads/*
 !uploads/.gitkeep
+frontend/src/assets/home@2x.png
+frontend/vite.config.ts.timestamp-**
+bookhealth-deploy.tar.gz
+health-images.tar.gz
+backend/.env
+backend/.env
+frontend/src/pages/Home.tsx
+health-images.tar.gz
+health-frontend.tar.gz
+

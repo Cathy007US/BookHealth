@@ -6,6 +6,7 @@ import PriceTag from '../components/PriceTag';
 import { useI18n } from '../i18n';
 import Icon from '../components/Icon';
 import CoverImage from '../components/CoverImage';
+import { packageImage } from '../utils/localImages';
 
 export default function PackageDetail() {
   const { id } = useParams();
@@ -51,7 +52,7 @@ export default function PackageDetail() {
     <div className="pb-20">
       <Header title={t('packages.detailTitle')} />
       <CoverImage
-        src={pkg.cover_image}
+        src={packageImage(Number(id) || 0)}
         fallbackIcon="tijian"
         className="w-full h-40"
         fit="cover"

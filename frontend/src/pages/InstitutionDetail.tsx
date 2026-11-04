@@ -5,6 +5,7 @@ import Header from '../components/Header';
 import { useI18n } from '../i18n';
 import Icon from '../components/Icon';
 import CoverImage from '../components/CoverImage';
+import { institutionImage, packageImage } from '../utils/localImages';
 
 export default function InstitutionDetail() {
   const { id } = useParams();
@@ -25,7 +26,7 @@ export default function InstitutionDetail() {
         <div className="card">
           <div className="flex items-start gap-4">
             <CoverImage
-              src={inst.logo}
+              src={institutionImage(Number(id) || 0)}
               fallbackIcon="tijianzhongxin"
               className="w-16 h-16 shrink-0 rounded-xl"
             />
@@ -46,14 +47,14 @@ export default function InstitutionDetail() {
 
         <h3 className="text-base font-semibold mt-6 mb-3">{t('institutions.packages')}</h3>
         <div className="space-y-3">
-          {(inst.packages || []).map((pkg: any) => (
+          {(inst.packages || []).map((pkg: any, idx: number) => (
             <button
               key={pkg.id}
               onClick={() => navigate(`/packages/${pkg.id}`)}
               className="w-full bg-white rounded-xl shadow-sm overflow-hidden flex"
             >
               <CoverImage
-                src={pkg.cover_image}
+                src={packageImage(idx)}
                 fallbackIcon="tijian"
                 className="w-20 h-20 shrink-0"
               />

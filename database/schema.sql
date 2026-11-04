@@ -94,7 +94,7 @@ CREATE TABLE IF NOT EXISTS packages (
     description TEXT,
     price DECIMAL(10,2) NOT NULL,
     original_price DECIMAL(10,2),         -- 原价（划线价）
-    cover_image VARCHAR(500),
+    cover_image TEXT,                      -- 套餐封面（存 base64 data URL 或图片 URL）
     detail_images TEXT[],
     content TEXT,                         -- 套餐详情（富文本）
     suitable_crowd VARCHAR(200),          -- 适用人群

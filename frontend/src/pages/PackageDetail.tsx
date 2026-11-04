@@ -4,6 +4,8 @@ import { packageApi } from '../api';
 import Header from '../components/Header';
 import PriceTag from '../components/PriceTag';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
+import CoverImage from '../components/CoverImage';
 
 export default function PackageDetail() {
   const { id } = useParams();
@@ -48,7 +50,12 @@ export default function PackageDetail() {
   return (
     <div className="pb-20">
       <Header title={t('packages.detailTitle')} />
-      <div className="h-40 bg-gradient-to-r from-primary-100 to-primary-200 flex items-center justify-center text-5xl">📋</div>
+      <CoverImage
+        src={pkg.cover_image}
+        fallbackIcon="tijian"
+        className="w-full h-40"
+        fit="cover"
+      />
 
       <div className="px-4 py-4">
         {/* 基本信息 */}
@@ -115,7 +122,9 @@ export default function PackageDetail() {
                 >
                   <div className="text-left">
                     <div className="text-sm font-medium">{td(inst.name)}</div>
-                    <div className="text-xs text-gray-400">📍 {td(inst.address)}</div>
+                    <div className="text-xs text-gray-400 flex items-center gap-1">
+                      <Icon name="icon-map" style={{ width: 12, height: 12, fill: '#3a8e59' }} /> {td(inst.address)}
+                    </div>
                   </div>
                   <div className={`w-5 h-5 rounded-full border-2 ${selectedInstitution === inst.id ? 'bg-primary-500 border-primary-500' : 'border-gray-300'}`}>
                     {selectedInstitution === inst.id && <div className="text-white text-xs text-center leading-4">✓</div>}

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { orderApi } from '../api';
 import StatusBadge from '../components/StatusBadge';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
 
 const TAB_KEYS = [
   { labelKey: 'common.all', value: '' },
@@ -51,8 +52,8 @@ export default function OrderList() {
           <div className="text-center text-gray-400 py-10">{t('common.loading')}</div>
         ) : list.length === 0 ? (
           <div className="text-center text-gray-400 py-10">
-            <div className="text-4xl mb-2">📅</div>
-            {t('orders.noData')}
+            <Icon name="yuyuezhuanjia-" style={{ width: 40, height: 40, fill: '#3a8e59' }} />
+            <div className="mt-2">{t('orders.noData')}</div>
           </div>
         ) : (
           list.map((order) => (
@@ -66,13 +67,17 @@ export default function OrderList() {
                 <StatusBadge status={order.status} />
               </div>
               <div className="flex gap-3">
-                <div className="w-14 h-14 bg-primary-50 rounded-lg flex items-center justify-center text-2xl">📋</div>
+                <div className="w-14 h-14 bg-primary-50 rounded-lg flex items-center justify-center">
+                  <Icon name="tijian" style={{ width: 24, height: 24, fill: '#3a8e59' }} />
+                </div>
                 <div className="flex-1">
                   <div className="text-sm font-medium">{td(order.package_name)}</div>
                   <div className="text-xs text-gray-400 mt-1">{td(order.institution_name)}</div>
                   <div className="text-xs text-gray-400">{t('orders.examinee')}：{td(order.examinee_name)}</div>
                   {order.exam_date && (
-                    <div className="text-xs text-gray-400">📅 {order.exam_date}</div>
+                    <div className="text-xs text-gray-400 flex items-center gap-1">
+                      <Icon name="navicon-tjjl" style={{ width: 12, height: 12, fill: '#3a8e59' }} /> {order.exam_date}
+                    </div>
                   )}
                 </div>
               </div>

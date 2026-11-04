@@ -1,12 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import { useI18n } from '../i18n';
+import Icon from './Icon';
 
 const tabs = [
-  { to: '/', labelKey: 'tab.home', icon: '🏠', path: '/' },
-  { to: '/institutions', labelKey: 'tab.institutions', icon: '🏥', path: '/institutions' },
-  { to: '/packages', labelKey: 'tab.packages', icon: '📋', path: '/packages' },
-  { to: '/orders', labelKey: 'tab.orders', icon: '📅', path: '/orders' },
-  { to: '/profile', labelKey: 'tab.profile', icon: '👤', path: '/profile' },
+  { to: '/', labelKey: 'tab.home', icon: 'shouye', path: '/' },
+  { to: '/institutions', labelKey: 'tab.institutions', icon: 'tijianzhongxin', path: '/institutions' },
+  { to: '/orders', labelKey: 'tab.orders', icon: 'yuyuezhuanjia-', path: '/orders' },
+  { to: '/profile', labelKey: 'tab.profile', icon: 'wodetijian1', path: '/profile' },
 ];
 
 export default function TabBar() {
@@ -20,7 +20,7 @@ export default function TabBar() {
           end={tab.path === '/'}
           className={({ isActive }) => `nav-item ${isActive ? 'nav-item-active' : ''}`}
         >
-          <span className="text-xl">{tab.icon}</span>
+          <Icon name={tab.icon} className="nav-icon" />
           <span>{t(tab.labelKey)}</span>
         </NavLink>
       ))}

@@ -27,6 +27,15 @@ html, body {
   display: none;
 }
 
+/* SVG iconfont 基础样式 */
+.icon {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.15em;
+  fill: currentColor;
+  overflow: hidden;
+}
+
 /* 通用样式 */
 @layer components {
   .btn-primary {
@@ -35,13 +44,54 @@ html, body {
   .card {
     @apply bg-white rounded-xl p-4 shadow-sm;
   }
-  .nav-bar {
-    @apply fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-gray-100 flex justify-around items-center h-14 z-50;
-  }
-  .nav-item {
-    @apply flex flex-col items-center gap-0.5 text-xs text-gray-400;
-  }
-  .nav-item-active {
-    @apply text-primary-600;
-  }
+}
+
+/* 底部导航栏 */
+.nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  background: #fff;
+  border-top: 1px solid #f3f4f6;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 56px;
+  z-index: 50;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  color: #9ca3af;
+  flex: 1;
+  min-width: 0;
+}
+
+.nav-item-active {
+  color: #3a8e59 !important;
+}
+
+.nav-icon {
+  width: 22px;
+  height: 22px;
+  fill: currentColor;
+  color: #9ca3af;
+  transition: color 0.2s;
+}
+
+.nav-item-active .nav-icon {
+  color: #3a8e59 !important;
+}
+
+/* 二级菜单图标 */
+.menu-icon {
+  font-size: 20px;
+  color: #3a8e59;
 }

@@ -18,6 +18,8 @@ export const en: Record<string, string> = {
   'tab.institutions': 'Institutions',
   'tab.packages': 'Checkup',
   'tab.orders': 'Bookings',
+  'tab.records': 'Records',
+  'tab.consultation': 'Consult',
   'tab.profile': 'Me',
 
   // Login

@@ -27,7 +27,7 @@ import AdminExaminees from './pages/admin/AdminExaminees';
 
 // 需要隐藏 TabBar 的页面路径
 const HIDE_TABBAR_PATHS = ['/login', '/orders/create'];
-const HIDE_TABBAR_PREFIXES = ['/packages/', '/institutions/', '/orders/', '/reports/', '/examinees', '/admin', '/consultations'];
+const HIDE_TABBAR_PREFIXES = ['/packages/', '/institutions/', '/orders/', '/reports', '/examinees', '/admin', '/consultations'];
 
 function Layout({ children }: { children: React.ReactNode }) {
   const { pathname } = useLocation();

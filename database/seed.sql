@@ -169,7 +169,7 @@ INSERT INTO package_items (package_id, exam_item_id) VALUES
 -- 9. 用户 (test01, password: a123456)
 -- ============================================
 INSERT INTO users (openid, phone, password_hash, nickname, gender, status) VALUES
-    (NULL, '13800000001', '$2b$10$vUcRQSrIt42HpVy1ZxuABOxxM7WIrM3rGgOvK773raYrr6p9Bie/S', 'test01', 1, 1);
+    (NULL, '+14151234567', '$2b$10$vUcRQSrIt42HpVy1ZxuABOxxM7WIrM3rGgOvK773raYrr6p9Bie/S', 'test01', 1, 1);
 
 -- ============================================
 -- 10. 管理员 (test01, password: a123456)

@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { reportApi } from '../api';
 import Header from '../components/Header';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
 
 export default function ReportList() {
   const navigate = useNavigate();
@@ -32,8 +33,8 @@ export default function ReportList() {
           <div className="text-center text-gray-400 py-10">{t('common.loading')}</div>
         ) : list.length === 0 ? (
           <div className="text-center text-gray-400 py-10">
-            <div className="text-4xl mb-2">📄</div>
-            {t('reports.noData')}
+            <Icon name="tijianbaogao" style={{ width: 40, height: 40, fill: '#3a8e59' }} />
+            <div className="mt-2">{t('reports.noData')}</div>
           </div>
         ) : (
           list.map((report) => (

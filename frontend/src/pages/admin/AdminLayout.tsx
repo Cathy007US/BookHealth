@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useI18n } from '../../i18n';
 import LanguageToggle from '../../components/LanguageToggle';
+import Icon from '../../components/Icon';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -22,8 +23,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   const menuItems = [
-    { key: 'exam-items', label: t('admin.examItems'), path: '/admin/exam-items', icon: '📋' },
-    { key: 'examinees', label: t('admin.examinees'), path: '/admin/examinees', icon: '👥' },
+    { key: 'exam-items', label: t('admin.examItems'), path: '/admin/exam-items', iconClass: 'icon-tijianxiangmu' },
+    { key: 'examinees', label: t('admin.examinees'), path: '/admin/examinees', iconClass: 'icon-tianjiarenyuan' },
   ];
 
   if (!adminToken) {
@@ -62,7 +63,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
-                <span>{item.icon}</span>
+                <Icon name={item.iconClass} style={{ width: 16, height: 16, fill: pathname === item.path ? '#3a8e59' : '#6b7280' }} />
                 <span>{t(item.label)}</span>
               </button>
             ))}

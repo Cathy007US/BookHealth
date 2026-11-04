@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { consultationApi } from '../api';
 import Header from '../components/Header';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
 
 export default function Consultation() {
   const navigate = useNavigate();
@@ -64,7 +65,9 @@ export default function Consultation() {
                 <div key={c.id} className="bg-white rounded-xl shadow-sm p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 bg-primary-50 rounded-full flex items-center justify-center text-sm">👨‍⚕️</div>
+                      <div className="w-8 h-8 bg-primary-50 rounded-full flex items-center justify-center">
+                        <Icon name="yisheng" style={{ width: 16, height: 16, fill: '#3a8e59' }} />
+                      </div>
                       <div>
                         <div className="text-sm font-medium">{td(c.doctor_name)}</div>
                         <div className="text-xs text-gray-400">{td(c.doctor_title)}</div>
@@ -94,7 +97,9 @@ export default function Consultation() {
             {doctors.map((doc: any) => (
               <div key={doc.id} className="bg-white rounded-xl shadow-sm p-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-14 h-14 bg-primary-50 rounded-full flex items-center justify-center text-2xl flex-shrink-0">👨‍⚕️</div>
+                  <div className="w-14 h-14 bg-primary-50 rounded-full flex items-center justify-center flex-shrink-0">
+                    <Icon name="yisheng" style={{ width: 24, height: 24, fill: '#3a8e59' }} />
+                  </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="text-base font-medium text-gray-800">{td(doc.name)}</span>
@@ -121,7 +126,9 @@ export default function Consultation() {
         <div className="fixed inset-0 bg-black/40 z-50 flex items-end justify-center" onClick={() => setSelectedDoctor(null)}>
           <div className="bg-white w-full max-w-[430px] rounded-t-2xl p-6" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center text-xl">👨‍⚕️</div>
+              <div className="w-12 h-12 bg-primary-50 rounded-full flex items-center justify-center">
+                <Icon name="yisheng" style={{ width: 20, height: 20, fill: '#3a8e59' }} />
+              </div>
               <div>
                 <div className="text-base font-medium">{td(selectedDoctor.name)}</div>
                 <div className="text-xs text-gray-400">{td(selectedDoctor.title)} · {td(selectedDoctor.hospital)}</div>

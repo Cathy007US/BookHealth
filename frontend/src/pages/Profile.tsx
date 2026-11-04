@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { useStore } from '../store';
 import { useI18n } from '../i18n';
 import LanguageToggle from '../components/LanguageToggle';
+import Icon from '../components/Icon';
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -9,12 +10,12 @@ export default function Profile() {
   const { t } = useI18n();
 
   const menu = [
-    { label: t('profile.myOrders'), icon: '📅', path: '/orders' },
-    { label: t('profile.myReports'), icon: '📄', path: '/reports' },
-    { label: t('profile.examineeManage'), icon: '👥', path: '/examinees' },
-    { label: t('profile.reportInterpret'), icon: '💬', path: '/consultations' },
-    { label: t('profile.contactService'), icon: '📞', path: '' },
-    { label: t('profile.aboutUs'), icon: 'ℹ️', path: '' },
+    { label: t('profile.myOrders'), iconClass: 'icon-yuyuezhuanjia-', path: '/orders' },
+    { label: t('profile.myReports'), iconClass: 'icon-tijianbaogao', path: '/reports' },
+    { label: t('profile.examineeManage'), iconClass: 'icon-tianjiarenyuan', path: '/examinees' },
+    { label: t('profile.reportInterpret'), iconClass: 'icon-huanzheguanli', path: '/consultations' },
+    { label: t('profile.contactService'), iconClass: 'icon-huizhen', path: '' },
+    { label: t('profile.aboutUs'), iconClass: 'icon-tijianjieguo', path: '' },
   ];
 
   return (
@@ -24,8 +25,8 @@ export default function Profile() {
           <LanguageToggle />
         </div>
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center text-3xl">
-            {user?.avatar ? <img src={user.avatar} className="w-full h-full rounded-full" /> : '👤'}
+          <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+            <Icon name="wodetijian1" style={{ width: 30, height: 30, fill: '#ffffff' }} />
           </div>
           <div className="text-white">
             <div className="text-lg font-medium">{user?.nickname || t('profile.notLoggedIn')}</div>
@@ -43,7 +44,7 @@ export default function Profile() {
               className={`w-full flex items-center justify-between px-4 py-4 ${idx < menu.length - 1 ? 'border-b border-gray-50' : ''}`}
             >
               <div className="flex items-center gap-3">
-                <span className="text-xl">{item.icon}</span>
+                <Icon name={item.iconClass} className="menu-icon" />
                 <span className="text-sm text-gray-700">{item.label}</span>
               </div>
               <span className="text-gray-300">›</span>

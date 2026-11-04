@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { packageApi } from '../api';
 import Header from '../components/Header';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
+import CoverImage from '../components/CoverImage';
 
 export default function PackageList() {
   const navigate = useNavigate();
@@ -61,10 +63,14 @@ export default function PackageList() {
             <button
               key={pkg.id}
               onClick={() => navigate(`/packages/${pkg.id}`)}
-              className="w-full bg-white rounded-xl shadow-sm overflow-hidden"
+              className="w-full bg-white rounded-xl shadow-sm overflow-hidden flex"
             >
-              <div className="h-32 bg-gradient-to-r from-primary-50 to-primary-100 flex items-center justify-center text-4xl">📋</div>
-              <div className="p-3 text-left">
+              <CoverImage
+                src={pkg.cover_image}
+                fallbackIcon="tijian"
+                className="w-28 h-28 shrink-0"
+              />
+              <div className="flex-1 p-3 text-left">
                 <div className="text-sm font-medium text-gray-800">{td(pkg.name)}</div>
                 <div className="text-xs text-gray-400 mt-1">{td(pkg.suitable_crowd)}</div>
                 <div className="flex items-baseline gap-2 mt-2">

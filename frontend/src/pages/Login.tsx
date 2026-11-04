@@ -4,6 +4,7 @@ import { authApi } from '../api';
 import { useStore } from '../store';
 import { useI18n } from '../i18n';
 import LanguageToggle from '../components/LanguageToggle';
+import Icon from '../components/Icon';
 
 export default function Login() {
   const [mode, setMode] = useState<'password' | 'code'>('code');
@@ -62,7 +63,9 @@ export default function Login() {
         <LanguageToggle />
       </div>
       <div className="text-center mb-12">
-        <div className="text-5xl mb-3">🏥</div>
+        <div className="mb-3">
+          <Icon name="tijianzhongxin" style={{ width: 48, height: 48, fill: '#ffffff' }} />
+        </div>
         <h1 className="text-2xl font-bold text-white">{t('app.name')}</h1>
         <p className="text-primary-100 mt-2">{t('app.tagline')}</p>
       </div>

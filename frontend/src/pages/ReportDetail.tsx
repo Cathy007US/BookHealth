@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { reportApi } from '../api';
 import Header from '../components/Header';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
 
 export default function ReportDetail() {
   const { id } = useParams();
@@ -37,7 +38,7 @@ export default function ReportDetail() {
 
   return (
     <div className="pb-4">
-      <Header title={t('reports.detailTitle')} right={<button onClick={() => setShowEmailModal(true)} className="text-sm text-primary-600">📧</button>} />
+      <Header title={t('reports.detailTitle')} right={<button onClick={() => setShowEmailModal(true)} className="text-sm text-primary-600"><Icon name="share" style={{ width: 16, height: 16, fill: '#3a8e59' }} /></button>} />
 
       <div className="px-4 py-4 space-y-4">
         {/* 基本信息 */}

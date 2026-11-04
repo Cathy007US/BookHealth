@@ -18,6 +18,8 @@ export const zh: Record<string, string> = {
   'tab.institutions': '机构',
   'tab.packages': '体检',
   'tab.orders': '预约',
+  'tab.records': '体检记录',
+  'tab.consultation': '咨询医生',
   'tab.profile': '我的',
 
   // Login

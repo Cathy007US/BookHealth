@@ -4,6 +4,7 @@ import { orderApi } from '../api';
 import Header from '../components/Header';
 import StatusBadge from '../components/StatusBadge';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
 
 export default function OrderDetail() {
   const { id } = useParams();
@@ -55,11 +56,15 @@ export default function OrderDetail() {
         <div className="card">
           <h3 className="font-medium mb-3">{t('orders.packageInfo')}</h3>
           <div className="flex gap-3">
-            <div className="w-16 h-16 bg-primary-50 rounded-lg flex items-center justify-center text-2xl">📋</div>
+            <div className="w-16 h-16 bg-primary-50 rounded-lg flex items-center justify-center">
+              <Icon name="tijian" style={{ width: 24, height: 24, fill: '#3a8e59' }} />
+            </div>
             <div className="flex-1">
               <div className="text-sm font-medium">{td(order.package_name)}</div>
               <div className="text-xs text-gray-400 mt-1">{td(order.institution_name)}</div>
-              <div className="text-xs text-gray-400">📍 {td(order.institution_address)}</div>
+              <div className="text-xs text-gray-400 flex items-center gap-1">
+                <Icon name="icon-map" style={{ width: 12, height: 12, fill: '#3a8e59' }} /> {td(order.institution_address)}
+              </div>
             </div>
           </div>
         </div>

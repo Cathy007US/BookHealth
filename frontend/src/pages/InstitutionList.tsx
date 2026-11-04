@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { institutionApi } from '../api';
 import Header from '../components/Header';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
+import CoverImage from '../components/CoverImage';
 
 export default function InstitutionList() {
   const navigate = useNavigate();
@@ -31,7 +33,7 @@ export default function InstitutionList() {
       <Header title={t('institutions.title')} back={false} />
       <div className="px-4 py-3">
         <div className="bg-white rounded-xl flex items-center px-4 py-2">
-          <span className="text-gray-400">🔍</span>
+          <Icon name="tijianxiangmu" style={{ width: 16, height: 16, fill: '#9ca3af' }} />
           <input
             type="text"
             placeholder={t('institutions.searchPlaceholder')}
@@ -55,13 +57,19 @@ export default function InstitutionList() {
               onClick={() => navigate(`/institutions/${inst.id}`)}
               className="w-full bg-white rounded-xl shadow-sm overflow-hidden flex"
             >
-              <div className="w-20 h-20 bg-primary-50 flex items-center justify-center text-3xl">🏥</div>
+              <CoverImage
+                src={inst.logo}
+                fallbackIcon="tijianzhongxin"
+                className="w-20 h-20 shrink-0"
+              />
               <div className="flex-1 p-3 text-left">
                 <div className="text-sm font-medium text-gray-800">{td(inst.name)}</div>
                 <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
-                  📍 {td(inst.address) || t('institutions.addressPending')}
+                  <Icon name="icon-map" style={{ width: 12, height: 12, fill: '#3a8e59' }} /> {td(inst.address) || t('institutions.addressPending')}
                 </div>
-                <div className="text-xs text-gray-400 mt-1">📞 {inst.phone || ''}</div>
+                <div className="text-xs text-gray-400 mt-1 flex items-center gap-1">
+                  <Icon name="huizhen" style={{ width: 12, height: 12, fill: '#3a8e59' }} /> {inst.phone || ''}
+                </div>
               </div>
             </button>
           ))

@@ -4,6 +4,7 @@ import { packageApi, examineeApi, orderApi } from '../api';
 import Header from '../components/Header';
 import { useStore } from '../store';
 import { useI18n } from '../i18n';
+import Icon from '../components/Icon';
 
 export default function OrderCreate() {
   const [searchParams] = useSearchParams();
@@ -55,7 +56,9 @@ export default function OrderCreate() {
       <div className="px-4 py-4 space-y-4">
         {/* 套餐信息 */}
         <div className="card flex">
-          <div className="w-16 h-16 bg-primary-50 rounded-lg flex items-center justify-center text-2xl">📋</div>
+          <div className="w-16 h-16 bg-primary-50 rounded-lg flex items-center justify-center">
+            <Icon name="tijian" style={{ width: 24, height: 24, fill: '#3a8e59' }} />
+          </div>
           <div className="ml-3 flex-1">
             <div className="text-sm font-medium">{td(pkg.name)}</div>
             <div className="text-red-500 mt-1">¥{pkg.price}</div>

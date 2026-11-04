@@ -22,6 +22,7 @@ import Consultation from './pages/Consultation';
 
 // Admin Pages
 import AdminLogin from './pages/admin/AdminLogin';
+import AdminPackages from './pages/admin/AdminPackages';
 import AdminExamItems from './pages/admin/AdminExamItems';
 import AdminExaminees from './pages/admin/AdminExaminees';
 
@@ -82,6 +83,7 @@ export default function App() {
 
           {/* 后台管理路由（独立布局，不走 TabBar） */}
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/packages" element={<AdminPackages />} />
           <Route path="/admin/exam-items" element={<AdminExamItems />} />
           <Route path="/admin/examinees" element={<AdminExaminees />} />
 

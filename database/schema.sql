@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     phone VARCHAR(20),
     password_hash VARCHAR(255),          -- bcrypt加密
     nickname VARCHAR(100),
-    avatar VARCHAR(500),
+    avatar TEXT,                          -- 头像（base64 data URL 或图片 URL）
     gender SMALLINT DEFAULT 0,            -- 0未知 1男 2女
     status SMALLINT DEFAULT 1,            -- 0禁用 1正常
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS institutions (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     parent_id INTEGER REFERENCES institutions(id),  -- 总部ID，NULL为总部
-    logo VARCHAR(500),
+    logo TEXT,                            -- 机构 Logo（base64 data URL 或图片 URL）
     description TEXT,
     address VARCHAR(300),
     phone VARCHAR(20),
@@ -81,7 +81,7 @@ CREATE TABLE IF NOT EXISTS exam_items (
 CREATE TABLE IF NOT EXISTS package_categories (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL,
-    icon VARCHAR(500),
+    icon TEXT,                            -- 分类图标（base64 data URL 或图片 URL）
     sort_order INTEGER DEFAULT 0,
     status SMALLINT DEFAULT 1
 );
@@ -253,7 +253,7 @@ CREATE TABLE IF NOT EXISTS doctors (
     name VARCHAR(50) NOT NULL,
     title VARCHAR(50),                    -- 职称
     hospital VARCHAR(100),
-    avatar VARCHAR(500),
+    avatar TEXT,                          -- 医生头像（base64 data URL 或图片 URL）
     introduction TEXT,
     status SMALLINT DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

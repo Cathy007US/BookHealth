@@ -23,6 +23,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   const menuItems = [
+    { key: 'packages', label: t('admin.packages'), path: '/admin/packages', iconClass: 'icon-pintuan' },
     { key: 'exam-items', label: t('admin.examItems'), path: '/admin/exam-items', iconClass: 'icon-tijianxiangmu' },
     { key: 'examinees', label: t('admin.examinees'), path: '/admin/examinees', iconClass: 'icon-tianjiarenyuan' },
   ];

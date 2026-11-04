@@ -84,4 +84,10 @@ export const adminApi = {
   // Examinees (admin: all examinees)
   listAllExaminees: (params?: any) => http.get('/admin/examinees', { params }),
   deleteExaminees: (ids: number[]) => http.delete('/admin/examinees', { data: { ids } }),
+  // Packages（封面图为 base64，请求体较大，单独放宽超时）
+  listPackages: (params?: any) => http.get('/admin/packages', { params }),
+  createPackage: (data: any) => http.post('/admin/packages', data, { timeout: 60000 }),
+  updatePackage: (id: number, data: any) =>
+    http.put(`/admin/packages/${id}`, data, { timeout: 60000 }),
+  deletePackages: (ids: number[]) => http.delete('/admin/packages', { data: { ids } }),
 };

@@ -5,6 +5,7 @@ import { useI18n } from '../i18n';
 import LanguageToggle from '../components/LanguageToggle';
 import Icon from '../components/Icon';
 import CoverImage from '../components/CoverImage';
+import bannerIcon from '../assets/ll2.png';
 
 export default function Home() {
   const navigate = useNavigate();
@@ -111,7 +112,7 @@ export default function Home() {
           {banners.map((b) => (
             <div key={b.id} className="min-w-full h-28 bg-gradient-to-r from-primary-100 flex items-center justify-center text-center">
               <div>
-                <img src="../src/assets/ll2.png" className="w-10 h-10 mx-auto" />
+                <img src={bannerIcon} alt="" className="w-10 h-10 mx-auto" />
                 <div className="text-sm text-primary-700 font-medium mt-1">{b.title}</div>
               </div>
             </div>

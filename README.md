@@ -6,20 +6,44 @@ A mobile-first health examination booking platform built with React + TypeScript
 
 ## Table of Contents
 
-- [Overview](#overview)
-- [Project Structure](#project-structure)
-- [Tech Stack](#tech-stack)
-- [Database Tables](#database-tables)
-- [Features](#features)
-- [Local Development](#local-development)
-- [Deployment](#deployment)
-  - [Build & Deploy (AMD64 Server)](#build--deploy-amd64-server)
-  - [Update Frontend Only](#update-frontend-only)
-  - [Update Backend Only](#update-backend-only)
-- [Port Allocation](#port-allocation)
-- [Test Accounts](#test-accounts)
-- [Nginx Subdomain Configuration](#nginx-subdomain-configuration)
-- [Operations](#operations)
+- [BookHealth - Health Examination Booking System](#bookhealth---health-examination-booking-system)
+  - [Table of Contents](#table-of-contents)
+  - [Overview](#overview)
+  - [Project Structure](#project-structure)
+  - [Tech Stack](#tech-stack)
+  - [Database Tables](#database-tables)
+  - [Features](#features)
+    - [User Frontend (Mobile)](#user-frontend-mobile)
+    - [Admin Panel (PC)](#admin-panel-pc)
+    - [API](#api)
+  - [Local Development](#local-development)
+  - [Deployment](#deployment)
+    - [Build \& Deploy (AMD64 Server)](#build--deploy-amd64-server)
+    - [Update Frontend Only](#update-frontend-only)
+    - [Update Backend Only](#update-backend-only)
+  - [Port Allocation](#port-allocation)
+  - [Test Accounts](#test-accounts)
+  - [Nginx Subdomain Configuration](#nginx-subdomain-configuration)
+  - [Operations](#operations)
+- [BookHealth 体检预约系统](#bookhealth-体检预约系统)
+  - [目录](#目录)
+  - [概述](#概述)
+  - [项目结构](#项目结构)
+  - [技术栈](#技术栈)
+  - [数据库表](#数据库表)
+  - [功能清单](#功能清单)
+    - [用户前台（移动端）](#用户前台移动端)
+    - [后台管理（PC 版）](#后台管理pc-版)
+    - [API 接口](#api-接口)
+  - [本地开发](#本地开发)
+  - [部署指南](#部署指南)
+    - [构建并部署（AMD64 服务器）](#构建并部署amd64-服务器)
+    - [只更新前端](#只更新前端)
+    - [只更新后端](#只更新后端)
+  - [端口分配](#端口分配)
+  - [测试账号](#测试账号)
+  - [Nginx 二级域名配置](#nginx-二级域名配置)
+  - [运维命令](#运维命令)
 
 ---
 
@@ -252,8 +276,8 @@ rm health-backend.tar.gz
 
 | Type     | Username | Password  | URL                    |
 |----------|----------|-----------|------------------------|
-| User     | test01   | a123456   | / (home page)          |
-| Admin    | test01   | a123456   | /admin (admin panel)   |
+| User     | test01   | 123456   | / (home page)          |
+| Admin    | test01   | 123456   | /admin (admin panel)   |
 
 ## Nginx Subdomain Configuration
 
@@ -557,8 +581,8 @@ rm health-backend.tar.gz
 
 | 类型     | 用户名 | 密码     | 访问路径               |
 |----------|--------|----------|----------------------|
-| 前台用户 | test01 | a123456  | /（首页）              |
-| 后台管理员| test01 | a123456  | /admin（后台管理）     |
+| 前台用户 | test01 | 123456  | /（首页）              |
+| 后台管理员| test01 | 123456  | /admin（后台管理）     |
 
 ## Nginx 二级域名配置
 

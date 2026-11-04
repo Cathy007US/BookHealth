@@ -173,8 +173,8 @@ curl http://health.你的域名.com/api/packages  # 返回 JSON
 # 4. 浏览器访问
 # 前台：http://health.你的域名.com
 # 后台：http://health.你的域名.com/admin
-# 前台登录：test01 / a123456
-# 后台登录：test01 / a123456
+# 前台登录：test01 / 123456
+# 后台登录：test01 / 123456
 ```
 
 ---

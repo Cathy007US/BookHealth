@@ -166,13 +166,13 @@ INSERT INTO package_items (package_id, exam_item_id) VALUES
     (8,1),(8,2),(8,3),(8,4),(8,5),(8,6),(8,9),(8,10),(8,11),(8,12),(8,16),(8,17),(8,21);
 
 -- ============================================
--- 9. 用户 (test01, password: a123456)
+-- 9. 用户 (test01, password: 123456)
 -- ============================================
 INSERT INTO users (openid, phone, password_hash, nickname, gender, status) VALUES
     (NULL, '+14151234567', '$2b$10$vUcRQSrIt42HpVy1ZxuABOxxM7WIrM3rGgOvK773raYrr6p9Bie/S', 'test01', 1, 1);
 
 -- ============================================
--- 10. 管理员 (test01, password: a123456)
+-- 10. 管理员 (test01, password: 123456)
 -- ============================================
 INSERT INTO admins (username, password_hash, real_name, role, status) VALUES
     ('test01', '$2b$10$vUcRQSrIt42HpVy1ZxuABOxxM7WIrM3rGgOvK773raYrr6p9Bie/S', 'Test Admin', 'admin', 1);

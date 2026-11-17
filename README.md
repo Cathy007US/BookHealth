@@ -82,6 +82,13 @@ BookHealth/
 
 ## Tech Stack
 
+**Frontend:** React 18 + TypeScript + Vite + TailwindCSS + React Router
+**Backend:** Node.js + Express + TypeScript + Socket.IO + JWT + zod + multer
+**Database:** PostgreSQL 16
+**Server:** Docker Compose + Nginx
+
+Details:
+
 | Layer     | Technology |
 |-----------|------------|
 | Frontend  | Vite + React + TypeScript + TailwindCSS + React Router |
@@ -437,6 +444,13 @@ BookHealth/
 ```
 
 ## 技术栈
+
+**前端：** React 18 + TypeScript + Vite + TailwindCSS + React Router
+**后端：** Node.js + Express + TypeScript + Socket.IO + JWT + zod + multer
+**数据库：** PostgreSQL 16
+**服务器：** Docker Compose + Nginx
+
+详细版本：
 
 | 层级 | 技术 |
 |------|------|

@@ -1,4 +1,4 @@
-## 本地
+# 本地
 
 ./scripts/dev.sh          # ① 起本地服务（前端 5173 / 后端 3002，热更新）
                           #    本地账号：
@@ -16,7 +16,7 @@ docker compose up -d --force-recreate backend。
 
 ## 前后端都改
 vi bookhealth-api.env            # 所有账号密码都在这一个文件
-./scripts/deploy.sh config       # 上传配置 + 自动改库(密码变了执行 ALTER USER) + 重建容器
+./scripts/deploy.sh config       # 上传 env → 检查数据库配置 → 密码变了自动 ALTER USER → 重建容器 → 验证读库接口
 服务器：什么都不用做。
 规则：
 - ADMIN_PASS = 后台密码，APP_PASS = 前台密码，改文件即生效
@@ -31,3 +31,14 @@ Cmd+Shift+R 或无痕窗口
 ./scripts/deploy.sh init         # 覆盖 compose/nginx.conf/前后端产物/SQL 并重启全部容器
 ./scripts/deploy.sh config       # env 文件单独同步（init 不会覆盖它，防冲掉线上密码）
 ./scripts/deploy.sh status
+
+# 服务器
+## 免密登录
+ls ~/.ssh/id_ed25519.pub 2>/dev/null && echo "已有密钥" || ssh-keygen -t ed25519
+ssh-copy-id ubuntu@IP
+验证：
+ssh ubuntu@IP "echo 免密OK && hostname"
+
+本地链接服务器查看：
+./scripts/deploy.sh ssh（exit 回来）
+

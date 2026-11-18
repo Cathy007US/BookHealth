@@ -34,6 +34,14 @@ export const zh: Record<string, string> = {
   'login.invalidPhone': '请输入正确的手机号',
   'login.sendFailed': '发送失败',
   'login.loginFailed': '登录失败',
+  'login.accountPlaceholder': '手机号 / 用户名',
+  'login.accountRequired': '请输入手机号或用户名',
+  'login.invalidPassword': '密码至少 6 位',
+  'login.invalidCode': '验证码错误或已过期',
+  'login.userNotFound': '账号不存在，请检查后重试',
+  'login.wrongPassword': '密码错误',
+  'login.debugCode': '测试环境验证码',
+  'login.passwordHint': '忘记密码？可用验证码登录，或联系管理员重置',
 
   // Common
   'common.loading': '加载中...',

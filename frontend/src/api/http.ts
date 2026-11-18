@@ -25,14 +25,22 @@ http.interceptors.response.use(
   (error) => {
     if (error.response?.status === 401) {
       const url = error.config?.url || '';
-      if (url.startsWith('/admin')) {
-        localStorage.removeItem('adminToken');
-        localStorage.removeItem('adminUser');
-        window.location.href = '/admin/login';
-      } else {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        window.location.href = '/login';
+      // 登录类接口返回 401 表示「账号或密码错误」，属业务错误，
+      // 不能当作登录态失效去清 token + 跳转，否则页面会被刷掉、错误提示也看不到
+      const isLoginRequest =
+        /^\/(auth\/login|auth\/login-by-code|auth\/send-code|auth\/reset-password|admin\/login)(\/|\?|$)/.test(
+          url
+        );
+      if (!isLoginRequest) {
+        if (url.startsWith('/admin')) {
+          localStorage.removeItem('adminToken');
+          localStorage.removeItem('adminUser');
+          window.location.href = '/admin/login';
+        } else {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error.response?.data || error);

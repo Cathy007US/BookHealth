@@ -10,6 +10,8 @@ export const authApi = {
     http.post('/auth/send-code', { phone }),
   loginByCode: (data: { phone: string; code: string }) =>
     http.post('/auth/login-by-code', data),
+  resetPassword: (data: { phone: string; code: string; newPassword: string }) =>
+    http.post('/auth/reset-password', data),
   getProfile: () => http.get('/auth/profile'),
 };
 

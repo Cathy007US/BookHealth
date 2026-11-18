@@ -73,10 +73,16 @@ BookHealth/
 ├── deploy/                         # Deployment configs
 │   ├── nginx-subdomain.conf        # Subdomain vhost (HTTP / HTTPS)
 │   └── DEPLOY.md                   # Full deployment guide
-├── docker-compose.yml              # Server deployment (image-based)
-├── docker-compose.dev.yml          # Local development (source build)
-├── bookhealth-api.env              # Environment variables
-├── build.sh                        # AMD64 build + packaging script
+├── scripts/
+│   ├── deploy.sh                   # frontend / backend / all / init / config / sql / status
+│   └── dev.sh                      # Local one-command dev environment
+├── runtime/                        # Deployed artifacts (bind-mounted by compose)
+│   ├── frontend/                   #   static files served by nginx
+│   └── backend/dist/               #   compiled API code
+├── docker-compose.yml              # Server: nginx + backend image, code mounted from runtime/
+├── docker-compose.dev.yml          # Local: Postgres only (APIs run natively)
+├── bookhealth-api.env              # The only config file: logins, JWT, DB name/user/password
+├── .deploy.env.example             # Copy to .deploy.env, fill SERVER / REMOTE_DIR
 └── README.md
 ```
 
@@ -184,101 +190,90 @@ Body size limits are already raised: `express.json({ limit: '10mb' })` and `clie
 ## Local Development
 
 ```bash
-# 1. Start everything with Docker
-cd BookHealth
-docker compose -f docker-compose.dev.yml up -d --build
+./scripts/dev.sh                 # installs deps, creates DB + seed, starts API and Vite
+DB_PORT=5434 ./scripts/dev.sh    # if you prefer the Postgres container (docker-compose.dev.yml)
 
-# 2. Or run frontend and backend separately for hot reload
-cd backend && npm install && npm run dev
-cd frontend && npm install && npm run dev
-
-# 3. Access
-# Frontend:    http://localhost:8090
-# Backend API: http://localhost:3002/api
-# Admin panel: http://localhost:8090/admin
+# Frontend:   http://localhost:5173
+# Admin:      http://localhost:5173/admin
+# API:        http://localhost:3002/api
 ```
+
+Every credential lives in `bookhealth-api.env` at the project root — login accounts, JWT secrets, **and the database name / user / password**. Change the file, run `./scripts/deploy.sh config`, done. No database edit needed; the script also applies `ALTER USER` / `ALTER DATABASE RENAME` when those values changed.
 
 ## Deployment
 
-The server runs `linux/amd64`; images are built on an Apple Silicon Mac via `buildx`.
+Two rules keep deploys tiny:
 
-### Full Deploy (AMD64 Server)
+1. **The server never builds the frontend.** `nginx:alpine` serves a bind-mounted folder.
+2. **Code lives outside the images.** Only compiled output is uploaded.
+
+| Service | Runtime | What a deploy uploads |
+|---------|---------|-----------------------|
+| frontend | `nginx:alpine` + `./runtime/frontend` mount | ~300 KB of static files, live immediately |
+| backend | `health-backend` image (node_modules) + `./runtime/backend/dist` mount | ~30 KB of compiled JS + container restart |
+| db | `postgres:16-alpine` + named volume | unchanged |
+
+### One-time setup
 
 ```bash
-# === Local (Mac) ===
-cd BookHealth
+# 1. Server: docker + compose installed, project dir exists
+ssh ubuntu@SERVER_IP 'mkdir -p /home/ubuntu/BookHealth'
 
-./build.sh        # builds both images, exports health-images.tar.gz, packages the bundle
+# 2. Local: point the scripts at your server
+cp .deploy.env.example .deploy.env
+vi .deploy.env                   # SERVER=ubuntu@1.2.3.4  REMOTE_DIR=/home/ubuntu/BookHealth
 
-scp bookhealth-deploy.tar.gz ubuntu@SERVER_IP:/home/ubuntu/
+# 3. First deploy (uploads compose/env/sql, builds the backend base image, starts everything)
+./scripts/deploy.sh init
+```
+
+### Everyday deploys
+
+```bash
+./scripts/deploy.sh frontend     # pages, styles, images — no image build, no restart
+./scripts/deploy.sh backend      # API changes — rebuild dist + restart backend (~10 s)
+./scripts/deploy.sh all          # both
+./scripts/deploy.sh status       # container state + health checks
+./scripts/deploy.sh logs backend # follow logs
+```
+
+`--no-build` uploads the existing `dist` folders without rebuilding.
+
+### Change login passwords
+
+```bash
+vi bookhealth-api.env            # ADMIN_USER / ADMIN_PASS, APP_USER / APP_PASS
+./scripts/deploy.sh config       # sync the file, apply DB changes if any, recreate containers
+```
+
+The env account takes precedence over the database account, so editing the file is enough. Database users created by registration keep working with their own password.
+
+### Change the database name / password
+
+Both `db` and `backend` read from the same file. Keep the two groups in sync — `DB_*` is what the API connects with, `POSTGRES_*` is what Postgres initialises with:
+
+```env
+DB_NAME=bookhealth          POSTGRES_DB=bookhealth
+DB_USER=postgres            POSTGRES_USER=postgres
+DB_PASSWORD=postgres123     POSTGRES_PASSWORD=postgres123
 ```
 
 ```bash
-# === Server (Ubuntu) ===
-mkdir -p /home/ubuntu/BookHealth && cd /home/ubuntu/BookHealth
-tar xzf /home/ubuntu/bookhealth-deploy.tar.gz
-
-vi bookhealth-api.env          # set DB_PASSWORD / JWT secrets (must match the DB password)
-
-docker load -i health-images.tar.gz
-docker compose up -d
-
-docker compose ps
-curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3002/api/packages
+vi bookhealth-api.env            # change both values of the pair
+./scripts/deploy.sh config       # validates → ALTER USER / RENAME → recreate db+backend → verify
 ```
 
-### Update Frontend Only
+What the script does, in order: validate the pairs (mismatch = exit, the classic 502) → back up the server file to `bookhealth-api.env.bak` → upload → stop backend → `ALTER USER ... WITH PASSWORD` if the password changed → `ALTER DATABASE ... RENAME TO` if the name changed → recreate `db` and `backend` → require **`/api/packages` to return 200** (a real DB read), not just `/health`.
+
+`POSTGRES_PASSWORD` only applies when the data volume is created for the first time; afterwards the password must be changed inside Postgres, which is exactly what the script does. Changing `DB_USER` to a brand-new role still requires re-creating the volume.
+
+### Database migration
+
+There is no migration framework — SQL files are **not** executed automatically. Back up, then run:
 
 ```bash
-# Local
-docker buildx build --platform linux/amd64 -t health-frontend:latest \
-  -f frontend/Dockerfile frontend/ --load
-docker save health-frontend:latest | gzip > health-frontend.tar.gz
-scp health-frontend.tar.gz ubuntu@SERVER_IP:/home/ubuntu/BookHealth/
-```
-
-```bash
-# Server
-cd /home/ubuntu/BookHealth
-docker load -i health-frontend.tar.gz
-docker compose up -d --force-recreate frontend
-rm health-frontend.tar.gz
-```
-
-### Update Backend Only
-
-```bash
-# Local
-docker buildx build --platform linux/amd64 -t health-backend:latest \
-  -f backend/Dockerfile backend/ --load
-docker save health-backend:latest | gzip > health-backend.tar.gz
-scp health-backend.tar.gz ubuntu@SERVER_IP:/home/ubuntu/BookHealth/
-```
-
-```bash
-# Server
-cd /home/ubuntu/BookHealth
-docker tag health-backend:latest health-backend:prev 2>/dev/null || true   # rollback point
-docker load -i health-backend.tar.gz
-docker compose up -d --force-recreate backend
-rm health-backend.tar.gz
-```
-
-> `--force-recreate` is required. Image tag is always `latest`, so a plain `docker compose up -d` may decide nothing changed and keep the old container.
-
-### Database Migration
-
-SQL files are **not** executed automatically — there is no migration framework. Run them explicitly against the `bookhealth` database:
-
-```bash
-cd /home/ubuntu/BookHealth
-
-# Always back up first
 docker compose exec -T db pg_dump -U postgres bookhealth > backup_$(date +%Y%m%d_%H%M).sql
-
-# Run migration (ON_ERROR_STOP aborts on the first failure)
-docker compose exec -T db psql -U postgres -d bookhealth -v ON_ERROR_STOP=1 \
-  < database/migrate_image_columns_to_text.sql
+./scripts/deploy.sh sql database/migrate_image_columns_to_text.sql   # runs locally → server
 
 # Verify column types
 docker compose exec db psql -U postgres -d bookhealth -c "
@@ -289,6 +284,8 @@ WHERE (table_name, column_name) IN (
   ('package_categories','icon'), ('doctors','avatar'), ('users','avatar')
 ) ORDER BY 1,2;"
 ```
+
+> `POSTGRES_PASSWORD` is only honoured when the data volume is created. Changing it later requires `ALTER USER postgres WITH PASSWORD '...'` inside the container.
 
 ## Troubleshooting
 
@@ -312,10 +309,12 @@ WHERE (table_name, column_name) IN (
 
 ## Test Accounts
 
-| Type | Username | Password | URL |
-|------|----------|----------|-----|
-| User | test01 | 123456 | `/` |
-| Admin | test01 | 123456 | `/admin` |
+Login accounts, JWT secrets and the database name/user/password are all in `bookhealth-api.env` — edit the file, then `./scripts/deploy.sh config`.
+
+| Type | Env keys | Default | URL |
+|------|----------|---------|-----|
+| User | `APP_USER` / `APP_PASS` | test01 / 123456 | `/` |
+| Admin | `ADMIN_USER` / `ADMIN_PASS` | test01 / admin123456 | `/admin` |
 
 ## Nginx Configuration
 
@@ -436,10 +435,16 @@ BookHealth/
 ├── deploy/                         # 部署配置
 │   ├── nginx-subdomain.conf        # 二级域名配置（HTTP / HTTPS）
 │   └── DEPLOY.md                   # 完整部署文档
-├── docker-compose.yml              # 服务器部署（基于镜像）
-├── docker-compose.dev.yml          # 本地开发（基于源码构建）
-├── bookhealth-api.env              # 环境变量
-├── build.sh                        # AMD64 构建 + 打包脚本
+├── scripts/
+│   ├── deploy.sh                   # 一键发布：frontend / backend / all / init / config / sql / status
+│   └── dev.sh                      # 本地一键开发环境
+├── runtime/                        # 发布产物（被 compose 挂载进容器）
+│   ├── frontend/                   #   前端静态文件
+│   └── backend/dist/               #   后端编译产物
+├── docker-compose.yml              # 服务器：nginx + 后端基础镜像，代码从 runtime/ 挂载
+├── docker-compose.dev.yml          # 本地：只起 Postgres（前后端原生运行）
+├── bookhealth-api.env              # 唯一配置文件：登录账号、JWT、数据库名/用户/密码
+├── .deploy.env.example             # 复制为 .deploy.env，填服务器地址
 └── README.md
 ```
 
@@ -547,101 +552,90 @@ BookHealth/
 ## 本地开发
 
 ```bash
-# 1. 启动全部 Docker 服务
-cd BookHealth
-docker compose -f docker-compose.dev.yml up -d --build
+./scripts/dev.sh                 # 装依赖、建库导数据、同时起后端和前端
+DB_PORT=5434 ./scripts/dev.sh    # 用 Docker 里的 Postgres（docker-compose.dev.yml）
 
-# 2. 或分别启动前端 / 后端（支持热更新）
-cd backend && npm install && npm run dev
-cd frontend && npm install && npm run dev
-
-# 3. 访问地址
-# 前台：    http://localhost:8090
+# 前台：    http://localhost:5173
+# 后台管理：http://localhost:5173/admin
 # 后端 API：http://localhost:3002/api
-# 后台管理：http://localhost:8090/admin
 ```
+
+所有账号密码都在根目录 `bookhealth-api.env` 里，**数据库名 / 库用户 / 库密码也在这里**。改文件 + `./scripts/deploy.sh config` 即生效，不用手写 SQL；值真的变了脚本会自动执行 `ALTER USER` / `ALTER DATABASE RENAME`。
 
 ## 部署指南
 
-服务器为 `linux/amd64`，镜像在 Apple Silicon Mac 上用 `buildx` 跨平台构建。
+两条原则让发布变成小包上传：
 
-### 构建并部署（AMD64 服务器）
+1. **服务器不再构建前端镜像**，用 `nginx:alpine` 直接挂载静态目录；
+2. **代码不进镜像**，只上传编译产物。
+
+| 服务 | 运行方式 | 一次发布要传什么 |
+|------|----------|------------------|
+| 前端 | `nginx:alpine` + 挂载 `./runtime/frontend` | 约 300 KB 静态文件，传完即生效 |
+| 后端 | `health-backend` 镜像（含 node_modules）+ 挂载 `./runtime/backend/dist` | 约 30 KB 编译结果 + 重启容器 |
+| 数据库 | `postgres:16-alpine` + 数据卷 | 不变 |
+
+### 首次部署（只做一次）
 
 ```bash
-# === 本地（Mac）===
-cd BookHealth
+# 1. 服务器上建目录（Docker 与 compose 需已安装）
+ssh ubuntu@服务器IP 'mkdir -p /home/ubuntu/BookHealth'
 
-./build.sh        # 构建前后端镜像、导出 health-images.tar.gz、打包部署包
+# 2. 本地配置发布参数
+cp .deploy.env.example .deploy.env
+vi .deploy.env                   # SERVER=ubuntu@服务器IP  REMOTE_DIR=/home/ubuntu/BookHealth
 
-scp bookhealth-deploy.tar.gz ubuntu@服务器IP:/home/ubuntu/
+# 3. 一键初始化：上传编排与配置、构建后端基础镜像、启动全部服务
+./scripts/deploy.sh init
+```
+
+### 日常发布
+
+```bash
+./scripts/deploy.sh frontend     # 只改了页面/样式/图片：不建镜像、不重启
+./scripts/deploy.sh backend      # 只改了接口逻辑：编译 dist + 重启 backend（约 10 秒）
+./scripts/deploy.sh all          # 前后端都改了
+./scripts/deploy.sh status       # 容器状态 + 健康检查
+./scripts/deploy.sh logs backend # 跟踪日志
+```
+
+加 `--no-build` 可跳过本地构建，直接上传现有 `dist`。
+
+### 改登录密码
+
+```bash
+vi bookhealth-api.env            # ADMIN_USER / ADMIN_PASS（后台）、APP_USER / APP_PASS（前台）
+./scripts/deploy.sh config       # 同步文件，库配置有变化就一并改库，再重建容器
+```
+
+env 里的账号优先于数据库账号，所以只改文件即可；注册产生的普通用户仍用自己的密码登录。
+
+### 改数据库名 / 数据库密码
+
+`db` 和 `backend` 读的是同一个文件。两组值必须写成一套 —— `DB_*` 是后端连库用的，`POSTGRES_*` 是 Postgres 初始化用的：
+
+```env
+DB_NAME=bookhealth          POSTGRES_DB=bookhealth
+DB_USER=postgres            POSTGRES_USER=postgres
+DB_PASSWORD=postgres123     POSTGRES_PASSWORD=postgres123
 ```
 
 ```bash
-# === 服务器（Ubuntu）===
-mkdir -p /home/ubuntu/BookHealth && cd /home/ubuntu/BookHealth
-tar xzf /home/ubuntu/bookhealth-deploy.tar.gz
-
-vi bookhealth-api.env          # 设置 DB_PASSWORD / JWT 密钥（密码须与数据库一致）
-
-docker load -i health-images.tar.gz
-docker compose up -d
-
-docker compose ps
-curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3002/api/packages
+vi bookhealth-api.env            # 成对修改
+./scripts/deploy.sh config       # 校验 → ALTER USER / RENAME → 重建 db+backend → 验证
 ```
 
-### 只更新前端
+脚本内部顺序：校验两组值是否一致（不一致直接退出，这就是之前 502 的根源）→ 备份为 `bookhealth-api.env.bak` → 上传 → 停 backend → 密码变了就 `ALTER USER ... WITH PASSWORD` → 库名变了就 `ALTER DATABASE ... RENAME TO` → 重建 `db` 和 `backend` → 要求 **`/api/packages` 返回 200**（真读库），而不只是 `/health`。
 
-```bash
-# 本地
-docker buildx build --platform linux/amd64 -t health-frontend:latest \
-  -f frontend/Dockerfile frontend/ --load
-docker save health-frontend:latest | gzip > health-frontend.tar.gz
-scp health-frontend.tar.gz ubuntu@服务器IP:/home/ubuntu/BookHealth/
-```
-
-```bash
-# 服务器
-cd /home/ubuntu/BookHealth
-docker load -i health-frontend.tar.gz
-docker compose up -d --force-recreate frontend
-rm health-frontend.tar.gz
-```
-
-### 只更新后端
-
-```bash
-# 本地
-docker buildx build --platform linux/amd64 -t health-backend:latest \
-  -f backend/Dockerfile backend/ --load
-docker save health-backend:latest | gzip > health-backend.tar.gz
-scp health-backend.tar.gz ubuntu@服务器IP:/home/ubuntu/BookHealth/
-```
-
-```bash
-# 服务器
-cd /home/ubuntu/BookHealth
-docker tag health-backend:latest health-backend:prev 2>/dev/null || true   # 留一个回滚点
-docker load -i health-backend.tar.gz
-docker compose up -d --force-recreate backend
-rm health-backend.tar.gz
-```
-
-> 必须加 `--force-recreate`。镜像 tag 永远是 `latest`，只跑 `docker compose up -d` 时 Compose 可能认为配置没变，继续用旧容器。
+`POSTGRES_PASSWORD` 只在数据卷首次创建时生效，之后改密码必须进库改，脚本帮你做了这一步。把 `DB_USER` 换成一个全新的角色仍然需要重建数据卷。
 
 ### 数据库迁移
 
-项目没有迁移框架，`database/` 下的 SQL **不会自动执行**，需要手动对 `bookhealth` 库跑一次：
+项目没有迁移框架，SQL **不会自动执行**。先备份再跑：
 
 ```bash
-cd /home/ubuntu/BookHealth
-
-# 先备份
 docker compose exec -T db pg_dump -U postgres bookhealth > backup_$(date +%Y%m%d_%H%M).sql
-
-# 执行迁移（ON_ERROR_STOP 保证出错立即中断）
-docker compose exec -T db psql -U postgres -d bookhealth -v ON_ERROR_STOP=1 \
-  < database/migrate_image_columns_to_text.sql
+./scripts/deploy.sh sql database/migrate_image_columns_to_text.sql   # 本地执行，自动传到服务器
 
 # 验证字段类型（character_maximum_length 应为空）
 docker compose exec db psql -U postgres -d bookhealth -c "
@@ -653,6 +647,8 @@ WHERE (table_name, column_name) IN (
 ) ORDER BY 1,2;"
 ```
 
+> `POSTGRES_PASSWORD` 只在数据卷首次创建时生效；之后要改库密码，进容器执行 `ALTER USER postgres WITH PASSWORD '...'`。
+
 ## 常见问题
 
 | 现象 | 原因 | 处理 |
@@ -661,7 +657,8 @@ WHERE (table_name, column_name) IN (
 | `password authentication failed for user "postgres"` | `.env` 里的密码与数据卷初始化时的密码不一致 | `docker compose exec db psql -U postgres -c "ALTER USER postgres WITH PASSWORD '...';"` 后 `up -d --force-recreate backend`。**不要用 `down -v` 重置，会清空数据** |
 | `413 Payload Too Large` | 请求体超限 | `express.json({ limit: '10mb' })` + 两处 `client_max_body_size 10m` |
 | 保存后图片字段仍为 `NULL` | 前端没提交该字段，或字段还是 `varchar(500)` | 看 Network 里的请求体，并跑上面的字段类型查询 |
-| `docker load` 后代码没变 | 容器没重建，或加载的是旧包 | `docker compose up -d --force-recreate <service>` |
+| `docker load` 后代码没变（旧流程） | 容器没重建，或加载的是旧包 | `docker compose up -d --force-recreate <service>` |
+| 发布后页面没变 | 浏览器缓存 / 上传的产物不是最新 | 强刷 `Cmd+Shift+R`；确认 `deploy.sh` 的构建步骤没有报错 |
 | 生产环境 `/src/assets/xxx.png` 404 | 资源用字符串路径引用，没走 `import` | 改成 `import img from '../assets/x.png'`，让 Vite 打包进 `dist/assets` |
 
 ## 端口分配
@@ -675,10 +672,12 @@ WHERE (table_name, column_name) IN (
 
 ## 测试账号
 
-| 类型 | 用户名 | 密码 | 访问路径 |
-|------|--------|------|----------|
-| 前台用户 | test01 | 123456 | `/` |
-| 后台管理员 | test01 | 123456 | `/admin` |
+登录账号、JWT 密钥、数据库名/用户/密码全部定义在 `bookhealth-api.env`，改完执行 `./scripts/deploy.sh config`。
+
+| 类型 | 环境变量 | 默认值 | 访问路径 |
+|------|----------|--------|----------|
+| 前台用户 | `APP_USER` / `APP_PASS` | test01 / 123456 | `/` |
+| 后台管理员 | `ADMIN_USER` / `ADMIN_PASS` | test01 / admin123456 | `/admin` |
 
 ## Nginx 二级域名配置
 
@@ -696,19 +695,20 @@ sudo certbot --nginx -d health.your-domain.com
 ## 运维命令
 
 ```bash
+# 本地一行搞定
+./scripts/deploy.sh status
+./scripts/deploy.sh logs backend
+./scripts/deploy.sh ssh            # 直接进服务器项目目录
+
+# 服务器上手动操作
 cd /home/ubuntu/BookHealth
 
-# 日志
 docker compose logs -f backend
 docker compose logs -f frontend
 docker compose logs -f db
 
-# 重启
-docker compose restart backend
-docker compose restart frontend
-
-# 进入数据库
-docker compose exec db psql -U postgres -d bookhealth
+docker compose up -d --force-recreate backend   # 换 dist / 改 env 后
+docker compose exec db psql -U postgres -d bookhealth   # 进数据库
 
 # 备份 / 恢复
 docker compose exec db pg_dump -U postgres bookhealth > backup_$(date +%Y%m%d).sql

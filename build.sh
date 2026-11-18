@@ -1,39 +1,16 @@
 #!/bin/bash
 # ============================================================
-# BookHealth 本地构建 AMD64 镜像脚本
-# 在 Mac (ARM64) 上构建 linux/amd64 镜像，直接传到服务器使用
+# 旧版脚本（构建 AMD64 镜像 + 打整包）
+#
+# 已废弃：新流程改为「小包发布」，前端只传静态文件、后端只传 dist，
+# 不再需要跨平台构建镜像，也不需要 docker save 几百 MB 的包。
+#
+# 现在请用：
+#   ./scripts/deploy.sh frontend    # 只改了前端
+#   ./scripts/deploy.sh backend     # 只改了后端
+#   ./scripts/deploy.sh all         # 都改了
+#   ./scripts/deploy.sh init        # 首次部署
+#
+# 本文件保留仅为兼容旧习惯，等价于把参数转给 scripts/deploy.sh
 # ============================================================
-
-set -e
-
-echo ">>> 构建 health-backend (linux/amd64)..."
-docker buildx build --platform linux/amd64 \
-  -t health-backend:latest \
-  -f backend/Dockerfile \
-  backend/ \
-  --load
-
-echo ">>> 构建 health-frontend (linux/amd64)..."
-docker buildx build --platform linux/amd64 \
-  -t health-frontend:latest \
-  -f frontend/Dockerfile \
-  frontend/ \
-  --load
-
-echo ">>> 导出镜像..."
-docker save health-backend:latest health-frontend:latest | gzip > health-images.tar.gz
-
-echo ">>> 打包部署文件..."
-tar czf bookhealth-deploy.tar.gz \
-  docker-compose.yml \
-  bookhealth-api.env \
-  database/*.sql \
-  deploy/nginx-subdomain.conf \
-  health-images.tar.gz
-
-echo ">>> 完成！"
-echo "文件："
-ls -lh bookhealth-deploy.tar.gz health-images.tar.gz
-echo ""
-echo "上传到服务器："
-echo "  scp bookhealth-deploy.tar.gz ubuntu@服务器IP:/home/ubuntu/"
+exec "$(cd "$(dirname "$0")" && pwd)/scripts/deploy.sh" "$@"

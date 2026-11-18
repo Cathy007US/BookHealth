@@ -34,6 +34,14 @@ export const en: Record<string, string> = {
   'login.invalidPhone': 'Please enter a valid phone number',
   'login.sendFailed': 'Send failed',
   'login.loginFailed': 'Login failed',
+  'login.accountPlaceholder': 'Phone or username',
+  'login.accountRequired': 'Enter your phone number or username',
+  'login.invalidPassword': 'Password must be at least 6 characters',
+  'login.invalidCode': 'Invalid or expired verification code',
+  'login.userNotFound': 'Account not found',
+  'login.wrongPassword': 'Incorrect password',
+  'login.debugCode': 'Dev verification code',
+  'login.passwordHint': 'Forgot your password? Log in with a code, or ask an admin to reset it.',
 
   // Common
   'common.loading': 'Loading...',

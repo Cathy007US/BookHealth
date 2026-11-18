@@ -18,9 +18,36 @@ router.post('/login', async (req, res) => {
   const parsed = schema.safeParse(req.body);
   if (!parsed.success) return fail(res, 'Invalid parameters', 400);
 
+  const username = parsed.data.username.trim();
+
+  // ① 环境变量账号优先：bookhealth-api.env 里的 ADMIN_USER / ADMIN_PASS
+  //    改文件即改密码，不需要动数据库，重启后端容器生效
+  const { adminUser, adminPass } = config.auth;
+  if (adminUser && username.toLowerCase() === adminUser.toLowerCase()) {
+    if (parsed.data.password !== adminPass) {
+      return fail(res, 'Incorrect password', 401);
+    }
+    const row = await queryOne<any>('SELECT * FROM admins WHERE username = $1', [adminUser]);
+    const payload = { adminId: row?.id ?? 0, username: adminUser, role: 'admin' };
+    const token = jwt.sign(payload, config.adminJwt.secret, {
+      expiresIn: config.adminJwt.expiresIn as any,
+    });
+    if (row) await query('UPDATE admins SET last_login_at = NOW() WHERE id = $1', [row.id]);
+    return success(res, {
+      token,
+      admin: {
+        id: payload.adminId,
+        username: adminUser,
+        real_name: row?.real_name || 'Administrator',
+        role: 'admin',
+      },
+    });
+  }
+
+  // ② 数据库账号兜底（admins 表）
   const admin = await queryOne<any>(
     'SELECT * FROM admins WHERE username = $1 AND status = 1',
-    [parsed.data.username]
+    [username]
   );
   if (!admin) return fail(res, 'Admin not found', 404);
 
